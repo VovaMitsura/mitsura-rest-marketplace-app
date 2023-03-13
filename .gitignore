@@ -4,6 +4,9 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### other ###
+*.drawio
+
 ### STS ###
 .apt_generated
 .classpath
