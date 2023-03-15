@@ -1,5 +1,6 @@
 package com.example.app.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -32,6 +33,7 @@ public class Bonus {
   private int amount;
 
   @ManyToMany(mappedBy = "bonuses")
+  @JsonBackReference
   private List<User> users;
 
 }

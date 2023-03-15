@@ -1,5 +1,6 @@
 package com.example.app.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -21,7 +22,7 @@ import lombok.NoArgsConstructor;
 public class User {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @Column(name = "fullname")
@@ -39,9 +40,11 @@ public class User {
       joinColumns = @JoinColumn(name = "user_id"),
       inverseJoinColumns = @JoinColumn(name = "bonus_id")
   )
+  @JsonManagedReference
   private List<Bonus> bonuses;
 
   @OneToMany(mappedBy = "seller")
+  @JsonManagedReference
   private List<Product> products;
 
   public enum Role{
