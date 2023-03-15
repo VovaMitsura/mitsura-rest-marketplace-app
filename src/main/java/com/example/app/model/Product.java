@@ -1,5 +1,6 @@
 package com.example.app.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -40,6 +41,7 @@ public class Product {
 
   @ManyToOne
   @JoinColumn(name = "seller_id")
+  @JsonBackReference
   private User seller;
 
   private int quantity;
