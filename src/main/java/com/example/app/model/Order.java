@@ -1,6 +1,8 @@
 package com.example.app.model;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -19,7 +21,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "'Order'")
+@Table(name = "My_Order")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -33,6 +35,7 @@ public class Order {
 
   @ManyToOne
   @JoinColumn(name = "customer_id")
+  @JsonBackReference
   private User customer;
 
   private String city;
@@ -50,6 +53,7 @@ public class Order {
   private Timestamp date;
 
   @OneToMany(mappedBy = "order")
+  @JsonManagedReference
   private List<OrderDetails> orderDetails;
 
   @Override

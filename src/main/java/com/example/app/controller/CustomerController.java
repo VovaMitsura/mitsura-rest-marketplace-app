@@ -1,5 +1,6 @@
 package com.example.app.controller;
 
+import com.example.app.controller.dto.CustomerDto;
 import com.example.app.model.User;
 import com.example.app.model.User.Role;
 import com.example.app.service.UserService;
@@ -24,15 +25,19 @@ public class CustomerController {
 
 
   @GetMapping()
-  public ResponseEntity<List<User>> getUsers() {
+  public ResponseEntity<List<CustomerDto>> getAllCustomers() {
     List<User> customers = customerService.getUsersByRole(Role.CUSTOMER);
-    return ResponseEntity.ok(customers);
+    List<CustomerDto> customerDTOs = customers.stream().map(CustomerDto::new).toList();
+
+    return ResponseEntity.ok(customerDTOs);
   }
 
   @GetMapping(path = "/{id}")
-  public ResponseEntity<User> getUserById(@PathVariable("id") Long customerId) {
+  public ResponseEntity<CustomerDto> getUserById(@PathVariable("id") Long customerId) {
     User user = customerService.getUserByIdAndRole(customerId, Role.CUSTOMER);
-    return ResponseEntity.ok(user);
+    CustomerDto customerDTO = new CustomerDto(user);
+
+    return ResponseEntity.ok(customerDTO);
   }
 
 }
