@@ -13,12 +13,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class ApplicationExceptionHandler {
 
   public static final String USER_NOT_FOUND = "user_not_found";
+  public static final String DISCOUNT_NOT_FOUND = "discount_not_found";
+  public static final String CATEGORY_NOT_FOUND = "category_not_found";
 
   @ResponseBody
   @ResponseStatus(value = HttpStatus.NOT_FOUND)
-  @ExceptionHandler(UserNotFoundException.class)
-  public ErrorResponse handleUserNotFoundException(UserNotFoundException e) {
-    return new ErrorResponse(USER_NOT_FOUND, e.getMessage());
+  @ExceptionHandler(NotFoundException.class)
+  public ErrorResponse handleUserNotFoundException(NotFoundException e) {
+    return new ErrorResponse(e.getErrorCode(), e.getMessage());
   }
 
   @AllArgsConstructor

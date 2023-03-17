@@ -1,5 +1,6 @@
 package com.example.app.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -29,6 +30,7 @@ public class Discount {
   private int discountPercent;
 
   @OneToMany(mappedBy = "discount")
+  @JsonManagedReference(value = "product-discount")
   private List<Product> products;
 
 }

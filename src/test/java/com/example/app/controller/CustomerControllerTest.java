@@ -27,6 +27,8 @@ import org.springframework.web.context.WebApplicationContext;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = RestMarketPlaceAppApplication.class)
 @TestMethodOrder(OrderAnnotation.class)
+@Sql(scripts = {"/testSql/schema.sql", "/testSql/data.sql"})
+@Sql(scripts = "/testSql/delete.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 @SpringBootTest()
 class CustomerControllerTest {
 
@@ -39,7 +41,6 @@ class CustomerControllerTest {
   private ObjectMapper objectMapper;
   private MockMvc mockMvc;
 
-
   @BeforeEach
   public void setUp() {
     this.mockMvc = MockMvcBuilders.webAppContextSetup(webAppContext).
@@ -48,8 +49,6 @@ class CustomerControllerTest {
 
   @Test
   @Order(2)
-  @Sql(scripts = "/testSql/data.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
-  @Sql(scripts = "/testSql/delete.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
   void getAllCustomersShouldReturnStatusOk() throws Exception {
     this.mockMvc.perform(MockMvcRequestBuilders.get(CUSTOMER_URL)
             .accept(MediaType.APPLICATION_JSON))
@@ -59,8 +58,6 @@ class CustomerControllerTest {
 
   @Test
   @Order(1)
-  @Sql(scripts = "/testSql/data.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
-  @Sql(scripts = "/testSql/delete.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
   void getCustomerByIdShouldReturnStatusOk() throws Exception {
     this.mockMvc.perform(MockMvcRequestBuilders.get(CUSTOMER_URL + "/1")
             .accept(MediaType.APPLICATION_JSON))
@@ -70,6 +67,7 @@ class CustomerControllerTest {
 
   @Test
   @Order(3)
+  @Sql(scripts = "/testSql/delete.sql")
   void getAllCustomersShouldReturnNotFound() throws Exception {
 
     ErrorResponse errorResponse = new ErrorResponse(ApplicationExceptionHandler.USER_NOT_FOUND,
@@ -85,6 +83,7 @@ class CustomerControllerTest {
 
   @Test
   @Order(4)
+  @Sql(scripts = "/testSql/delete.sql")
   void getCustomerByIdShouldReturnNotFound() throws Exception {
 
     ErrorResponse errorResponse = new ErrorResponse(ApplicationExceptionHandler.USER_NOT_FOUND,

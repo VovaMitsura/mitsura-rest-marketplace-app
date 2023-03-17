@@ -1,7 +1,8 @@
 package com.example.app.service;
 
 
-import com.example.app.exception.UserNotFoundException;
+import com.example.app.exception.ApplicationExceptionHandler;
+import com.example.app.exception.NotFoundException;
 import com.example.app.model.User;
 import com.example.app.model.User.Role;
 import com.example.app.repository.UserRepository;
@@ -24,7 +25,9 @@ public class UserService {
     List<User> users = userRepository.getUsersByRole(role);
 
     if (users.isEmpty()) {
-      throw new UserNotFoundException(String.format("no exists %ss in system", role));
+      throw new NotFoundException(
+          ApplicationExceptionHandler.USER_NOT_FOUND,
+          String.format("no exists %ss in system", role));
     }
 
     return users;
@@ -34,7 +37,9 @@ public class UserService {
     Optional<User> user = userRepository.findByIdAndRole(id, role);
 
     return user.orElseThrow(
-        () -> new UserNotFoundException(
+        () -> new NotFoundException(
+            ApplicationExceptionHandler.USER_NOT_FOUND,
             String.format("no exists %s with id: %d in system", role, id)));
   }
+
 }

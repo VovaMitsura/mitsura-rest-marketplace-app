@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 public class User {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
 
   @Column(name = "fullname")
@@ -44,10 +44,14 @@ public class User {
   private List<Bonus> bonuses;
 
   @OneToMany(mappedBy = "seller")
-  @JsonManagedReference
+  @JsonManagedReference(value = "product-seller")
   private List<Product> products;
 
-  public enum Role{
+  @OneToMany(mappedBy = "customer")
+  @JsonManagedReference
+  private List<Order> orders;
+
+  public enum Role {
     CUSTOMER, SELLER, ADMIN
   }
 
