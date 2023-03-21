@@ -1,8 +1,8 @@
 insert into User (fullname, email, role)
-values ('John Smith', 'john@mail.com', 'CUSTOMER'),
-       ('Dan Samuel', 'Samuel@mail.com', 'CUSTOMER'),
-       ('Will Taylor', 'will@mail.com', 'CUSTOMER'),
-       ('Tanya Smith', 'tanya@mail.com', 'SELLER');
+values ('John Smith', 'john@mail.com', 'CUSTOMER', '123456'),
+       ('Dan Samuel', 'Samuel@mail.com', 'CUSTOMER', '123456'),
+       ('Will Taylor', 'will@mail.com', 'CUSTOMER', '123456'),
+       ('Tanya Smith', 'tanya@mail.com', 'SELLER', '123456');
 
 insert into Bonus (name, date, amount)
 values	('action', now(), 200),
