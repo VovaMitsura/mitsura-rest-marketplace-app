@@ -1,4 +1,4 @@
-insert into User (fullname, email, role)
+insert into User (fullname, email, role, password)
 values ('John Smith', 'john@mail.com', 'CUSTOMER', '123456'),
        ('Dan Samuel', 'Samuel@mail.com', 'CUSTOMER', '123456'),
        ('Will Taylor', 'will@mail.com', 'CUSTOMER', '123456'),
