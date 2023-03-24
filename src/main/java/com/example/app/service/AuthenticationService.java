@@ -7,6 +7,7 @@ import com.example.app.model.User;
 import com.example.app.model.User.Role;
 import com.example.app.repository.UserRepository;
 import com.example.app.security.JwtService;
+import com.example.app.security.SimpleUserPrinciple;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,7 +30,7 @@ public class AuthenticationService {
         .role(Role.valueOf(registerRequest.getRole())).build();
 
     userRepository.save(user);
-    var jwtToken = jwtService.generateToken(user);
+    var jwtToken = jwtService.generateToken(new SimpleUserPrinciple(user));
     return AuthenticationResponse.builder().token(jwtToken).build();
   }
 
@@ -43,7 +44,7 @@ public class AuthenticationService {
     var user = userRepository.findByEmail(registerRequest.getEmail())
         .orElseThrow();
 
-    var jwtToken = jwtService.generateToken(user);
+    var jwtToken = jwtService.generateToken(new SimpleUserPrinciple(user));
     return AuthenticationResponse.builder().token(jwtToken).build();
 
   }

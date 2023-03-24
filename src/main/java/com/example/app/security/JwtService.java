@@ -8,16 +8,18 @@ import io.jsonwebtoken.security.Keys;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
 public class JwtService {
 
-  private static final long JWT_TOKEN_VALIDITY = 60 * 60 * (long) 5;
+  private static final long JWT_TOKEN_VALIDITY = (60 * 60 * (long) 5) * 1000;
 
   private final String securityKey;
 
@@ -34,7 +36,10 @@ public class JwtService {
   }
 
   public String generateToken(UserDetails userDetails) {
-    return doGenerateToken(new HashMap<>(), userDetails.getUsername());
+    List<? extends GrantedAuthority> authorities = (List<? extends GrantedAuthority>) userDetails.getAuthorities();
+    var roles = new HashMap<String, Object>();
+    roles.put("role", authorities.get(0).toString());
+    return doGenerateToken(roles, userDetails.getUsername());
   }
 
   public boolean isTokenValid(String token, UserDetails userDetails) {
@@ -55,8 +60,8 @@ public class JwtService {
 
   private String doGenerateToken(Map<String, Object> extraClaims, String subject) {
     return Jwts.builder()
-        .setSubject(subject)
         .setClaims(extraClaims)
+        .setSubject(subject)
         .setIssuedAt(new Date(System.currentTimeMillis()))
         .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY))
         .signWith(getSignKey(), SignatureAlgorithm.HS256)
