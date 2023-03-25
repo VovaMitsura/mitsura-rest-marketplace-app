@@ -31,7 +31,7 @@ import org.springframework.web.context.WebApplicationContext;
 @SpringBootTest()
 class CustomerControllerTest {
 
-  private final String CUSTOMER_URL = "/customers";
+  private final String CUSTOMER_URL = "/api/v1/customers";
 
   @Autowired
   private WebApplicationContext webAppContext;
