@@ -75,9 +75,9 @@ class SellerControllerTest {
     responseProduct.setQuantity(postProduct.getQuantity());
 
     User user = User.builder().id(1L)
-        .fullName("John Smith")
-        .role(Role.CUSTOMER)
-        .email("john@mail.com")
+        .fullName("Tanya Smith")
+        .role(Role.SELLER)
+        .email("tanya@mail.com")
         .password("123456")
         .build();
 
