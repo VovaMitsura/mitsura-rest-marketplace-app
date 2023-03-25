@@ -11,6 +11,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,8 +34,8 @@ public class SellerController {
 
 
   @PostMapping("/product")
+  @PreAuthorize("hasAuthority('SELLER')")
   public ResponseEntity<Product> addProductToTheSystem(@RequestBody ProductDto productDto) {
-
     User seller = sellerService.getUserByIdAndRole(4L, Role.SELLER);
     Product product = productService.createProduct(productDto, seller);
 
@@ -42,6 +43,7 @@ public class SellerController {
   }
 
   @GetMapping()
+  @PreAuthorize("hasAuthority('SELLER')")
   public ResponseEntity<List<SellerDto>> getAllSellers() {
     List<User> sellers = sellerService.getUsersByRole(Role.SELLER);
     List<SellerDto> sellerDTOs = sellers.stream().map(SellerDto::new).toList();
