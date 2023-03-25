@@ -15,6 +15,7 @@ public class ApplicationExceptionHandler {
   public static final String USER_NOT_FOUND = "user_not_found";
   public static final String DISCOUNT_NOT_FOUND = "discount_not_found";
   public static final String CATEGORY_NOT_FOUND = "category_not_found";
+  public static final String NO_PERMISSION = "no_permission";
 
   @ResponseBody
   @ResponseStatus(value = HttpStatus.NOT_FOUND)
