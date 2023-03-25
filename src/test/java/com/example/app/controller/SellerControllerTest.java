@@ -51,8 +51,6 @@ class SellerControllerTest {
   @Autowired
   private JwtAuthenticationFilter authenticationFilter;
 
-  private User user;
-
   private String jwtToken;
 
   private ProductDto postProduct;
@@ -76,7 +74,7 @@ class SellerControllerTest {
     responseProduct.setPrice(postProduct.getPrice());
     responseProduct.setQuantity(postProduct.getQuantity());
 
-    user = User.builder().id(1L)
+    User user = User.builder().id(1L)
         .fullName("John Smith")
         .role(Role.CUSTOMER)
         .email("john@mail.com")

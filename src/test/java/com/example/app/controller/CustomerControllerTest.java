@@ -4,7 +4,6 @@ import com.example.app.model.User;
 import com.example.app.model.User.Role;
 import com.example.app.security.JwtAuthenticationFilter;
 import com.example.app.utils.TokenUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -37,15 +36,11 @@ class CustomerControllerTest {
   @Autowired
   private WebApplicationContext webAppContext;
 
-  @Autowired
-  private ObjectMapper objectMapper;
-
   private MockMvc mockMvc;
 
   @Autowired
   private JwtAuthenticationFilter authenticationFilter;
 
-  private User user;
   private String jwtToken;
 
 
@@ -55,7 +50,7 @@ class CustomerControllerTest {
         .addFilter(authenticationFilter).
         build();
 
-    user = User.builder().id(1L)
+    User user = User.builder().id(1L)
         .fullName("John Smith")
         .role(Role.CUSTOMER)
         .email("john@mail.com")
