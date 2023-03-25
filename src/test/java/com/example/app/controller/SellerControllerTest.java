@@ -40,7 +40,7 @@ import org.springframework.web.context.WebApplicationContext;
 @SpringBootTest(classes = RestMarketPlaceAppApplication.class)
 class SellerControllerTest {
 
-  private final String SELLER_URL = "/seller";
+  private final String SELLER_URL = "/api/v1/seller";
   @Autowired
   private WebApplicationContext webAppContext;
   @Autowired
