@@ -1,22 +1,22 @@
-insert into User (fullname, email, role)
-values ('John Smith', 'john@mail.com', 'CUSTOMER'),
-       ('Dan Samuel', 'Samuel@mail.com', 'CUSTOMER'),
-       ('Will Taylor', 'will@mail.com', 'CUSTOMER'),
-       ('Tanya Smith', 'tanya@mail.com', 'SELLER');
+insert into User (fullname, email, role, password)
+values ('John Smith', 'john@mail.com', 'CUSTOMER', '123456'),
+       ('Dan Samuel', 'Samuel@mail.com', 'CUSTOMER', '123456'),
+       ('Will Taylor', 'will@mail.com', 'CUSTOMER', '123456'),
+       ('Tanya Smith', 'tanya@mail.com', 'SELLER', '123456');
 
 insert into Bonus (name, date, amount)
-values	('action', now(), 200),
-          ('prize', now(), 400),
-          ('complete', now(), 150);
+values ('action', now(), 200),
+       ('prize', now(), 400),
+       ('complete', now(), 150);
 
 insert into User_Bonus(user_id, bonus_id)
-values  (1, 1),
-        (1, 2),
-        (1, 3),
-        (2, 2),
-        (2, 3),
-        (3, 1),
-        (3, 3);
+values (1, 1),
+       (1, 2),
+       (1, 3),
+       (2, 2),
+       (2, 3),
+       (3, 1),
+       (3, 3);
 
 insert into category (name, description)
 values ('smartphone', 'smart gadgets for teenagers');
