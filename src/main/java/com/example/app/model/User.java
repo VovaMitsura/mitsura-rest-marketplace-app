@@ -13,6 +13,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,6 +39,8 @@ public class User {
   @Column(name = "fullname")
   private String fullName;
 
+  @Email(regexp = "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,3}",
+      flags = Pattern.Flag.CASE_INSENSITIVE)
   private String email;
 
   @Column(columnDefinition = "ENUM('Customer', 'Seller', 'Admin')")
@@ -58,7 +62,7 @@ public class User {
   @JsonManagedReference(value = "product-seller")
   private List<Product> products;
 
-  @OneToMany(mappedBy = "customer",  fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
   @JsonManagedReference
   private List<Order> orders;
 
