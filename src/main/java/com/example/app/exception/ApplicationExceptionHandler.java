@@ -16,11 +16,19 @@ public class ApplicationExceptionHandler {
   public static final String DISCOUNT_NOT_FOUND = "discount_not_found";
   public static final String CATEGORY_NOT_FOUND = "category_not_found";
   public static final String NO_PERMISSION = "no_permission";
+  public static final String DUPLICATE_ENTRY = "duplicate_entry";
 
   @ResponseBody
   @ResponseStatus(value = HttpStatus.NOT_FOUND)
   @ExceptionHandler(NotFoundException.class)
-  public ErrorResponse handleUserNotFoundException(NotFoundException e) {
+  public ErrorResponse handleResourceNotFoundException(NotFoundException e) {
+    return new ErrorResponse(e.getErrorCode(), e.getMessage());
+  }
+
+  @ResponseBody
+  @ResponseStatus(value = HttpStatus.CONFLICT)
+  @ExceptionHandler(ResourceConflictException.class)
+  public ErrorResponse handleResourceConflictException(ResourceConflictException e) {
     return new ErrorResponse(e.getErrorCode(), e.getMessage());
   }
 
