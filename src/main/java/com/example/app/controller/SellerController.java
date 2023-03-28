@@ -5,6 +5,8 @@ import com.example.app.controller.dto.SellerDto;
 import com.example.app.model.Product;
 import com.example.app.model.User;
 import com.example.app.model.User.Role;
+import com.example.app.security.SimpleUserPrinciple;
+import com.example.app.security.util.UserPrincipalUtil;
 import com.example.app.service.ProductService;
 import com.example.app.service.UserService;
 import java.util.List;
@@ -36,7 +38,10 @@ public class SellerController {
   @PostMapping("/product")
   @PreAuthorize("hasAuthority('SELLER')")
   public ResponseEntity<Product> addProductToTheSystem(@RequestBody ProductDto productDto) {
-    User seller = sellerService.getUserByIdAndRole(4L, Role.SELLER);
+
+    SimpleUserPrinciple userPrinciple = UserPrincipalUtil.extractUserPrinciple();
+
+    User seller = sellerService.getUserByEmail(userPrinciple.getUsername());
     Product product = productService.createProduct(productDto, seller);
 
     return new ResponseEntity<>(product, HttpStatus.CREATED);
@@ -52,6 +57,7 @@ public class SellerController {
   }
 
   @GetMapping(path = "/{id}")
+  @PreAuthorize("hasAuthority('SELLER')")
   public ResponseEntity<SellerDto> getUserById(@PathVariable("id") Long sellerId) {
     User seller = sellerService.getUserByIdAndRole(sellerId, Role.SELLER);
     SellerDto sellerDto = new SellerDto(seller);

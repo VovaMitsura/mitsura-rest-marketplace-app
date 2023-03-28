@@ -27,7 +27,7 @@ public class UserService {
     if (users.isEmpty()) {
       throw new NotFoundException(
           ApplicationExceptionHandler.USER_NOT_FOUND,
-          String.format("no exists %ss in system", role));
+          String.format("No exists %ss in system", role));
     }
 
     return users;
@@ -39,7 +39,14 @@ public class UserService {
     return user.orElseThrow(
         () -> new NotFoundException(
             ApplicationExceptionHandler.USER_NOT_FOUND,
-            String.format("no exists %s with id: %d in system", role, id)));
+            String.format("No exists %s with id: %d in system", role, id)));
+  }
+
+  public User getUserByEmail(String email) {
+    Optional<User> user = userRepository.findByEmail(email);
+
+    return user.orElseThrow(() -> new NotFoundException(ApplicationExceptionHandler.USER_NOT_FOUND,
+        String.format("No exists [%s] in system", email)));
   }
 
 }
