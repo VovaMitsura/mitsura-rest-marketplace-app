@@ -57,6 +57,7 @@ public class SellerController {
   }
 
   @GetMapping(path = "/{id}")
+  @PreAuthorize("hasAuthority('SELLER')")
   public ResponseEntity<SellerDto> getUserById(@PathVariable("id") Long sellerId) {
     User seller = sellerService.getUserByIdAndRole(sellerId, Role.SELLER);
     SellerDto sellerDto = new SellerDto(seller);

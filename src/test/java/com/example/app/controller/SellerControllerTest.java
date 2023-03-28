@@ -7,6 +7,7 @@ import com.example.app.exception.ApplicationExceptionHandler.ErrorResponse;
 import com.example.app.model.Product;
 import com.example.app.model.User;
 import com.example.app.model.User.Role;
+import com.example.app.repository.UserRepository;
 import com.example.app.security.JwtAuthenticationFilter;
 import com.example.app.utils.TokenUtil;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -45,6 +46,8 @@ class SellerControllerTest {
   private WebApplicationContext webAppContext;
   @Autowired
   private ObjectMapper objectMapper;
+  @Autowired
+  private UserRepository userRepository;
 
   private MockMvc mockMvc;
 
@@ -87,7 +90,7 @@ class SellerControllerTest {
   }
 
   @Test
-  @Order(1)
+  @Order(5)
   void postValidProductShouldReturnCreated() throws Exception {
 
     postProduct.setCategory("smartphone");
@@ -154,10 +157,13 @@ class SellerControllerTest {
   }
 
   @Test
-  @Order(5)
+  @Order(1)
   void getCustomerByIdShouldReturnOneValues() throws Exception {
-    this.mockMvc.perform(MockMvcRequestBuilders.get(SELLER_URL + "/4")
-            .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
+    User byEmail = userRepository.findByEmail("tanya@mail.com").get();
+
+    this.mockMvc.perform(
+            MockMvcRequestBuilders.get(SELLER_URL + String.format("/%d", byEmail.getId()))
+                .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
         .andExpect(MockMvcResultMatchers.status().isOk())
         .andDo(MockMvcResultHandlers.print());
   }
