@@ -1,5 +1,6 @@
 insert into User (fullname, email, role, password)
 values ('John Smith', 'john@mail.com', 'CUSTOMER', '123456'),
+       ('Jack John', 'jack@mail.com', 'ADMIN', '123456'),
        ('Dan Samuel', 'Samuel@mail.com', 'CUSTOMER', '123456'),
        ('Will Taylor', 'will@mail.com', 'CUSTOMER', '123456'),
        ('Tanya Smith', 'tanya@mail.com', 'SELLER', '123456');
