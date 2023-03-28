@@ -40,8 +40,8 @@ create table if not exists  Discount(
 
 create table if not exists  Category (
                                          id int primary key auto_increment,
-                                         name varchar (20),
-                                         description varchar (100)
+                                         name varchar (20) unique,
+                                         description varchar (300)
 );
 
 create table if not exists  Product(
