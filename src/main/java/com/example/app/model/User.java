@@ -1,5 +1,6 @@
 package com.example.app.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -59,7 +60,7 @@ public class User {
   private List<Bonus> bonuses;
 
   @OneToMany(mappedBy = "seller", fetch = FetchType.LAZY)
-  @JsonManagedReference(value = "product-seller")
+  @JsonBackReference(value = "product-seller")
   private List<Product> products;
 
   @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)

@@ -1,6 +1,7 @@
 package com.example.app.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -44,12 +45,12 @@ public class Product {
 
   @ManyToOne
   @JoinColumn(name = "seller_id")
-  @JsonBackReference(value = "product-seller")
+  @JsonIgnore
   private User seller;
 
-  private int quantity;
+  private Integer quantity;
 
   @OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
-  @JsonBackReference(value = "product-orderDetails")
+  @JsonIgnore
   private List<OrderDetails> orderDetails;
 }
