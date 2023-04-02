@@ -1,9 +1,12 @@
 package com.example.app.service;
 
 import com.example.app.controller.dto.ProductDto;
+import com.example.app.exception.ApplicationExceptionHandler;
+import com.example.app.exception.NotFoundException;
 import com.example.app.model.Product;
 import com.example.app.model.User;
 import com.example.app.repository.ProductRepository;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,4 +54,31 @@ public class ProductService {
 
     return productRepository.save(saveProduct);
   }
+
+  public List<Product> findAllByPriceBetween(int minPrice, int maxPrice) {
+    List<Product> products = productRepository.findAllByPriceBetween(minPrice,
+        maxPrice);
+
+    if (products.isEmpty()) {
+      throw new NotFoundException(ApplicationExceptionHandler.PRODUCT_NOT_FOUND,
+          String.format("No product with price between [%d] and [%d] in store", minPrice, maxPrice));
+    }
+
+    return products;
+  }
+
+  public List<Product> findAllByCategoryAndPriceBetween(String category, int minPrice,
+      int maxPrice) {
+    List<Product> products = productRepository.findAllByCategoryNameAndPriceBetween(
+        category, minPrice, maxPrice);
+
+    if (products.isEmpty()) {
+      throw new NotFoundException(ApplicationExceptionHandler.PRODUCT_NOT_FOUND,
+          String.format("No product with category [%s] and price between [%d] and [%d] in store",
+              category, minPrice, maxPrice));
+    }
+
+    return products;
+  }
 }
+

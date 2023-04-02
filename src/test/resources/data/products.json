@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "Samsung m53",
+    "price": 17500,
+    "quantity": 15
+  },
+  {
+    "id": 2,
+    "name": "Samsung a54",
+    "price": 22000,
+    "quantity": 20
+  },
+  {
+    "id": 3,
+    "name": "Honor h2",
+    "price": 8500,
+    "quantity": 30
+  },
+  {
+    "id": 4,
+    "name": "Asus vivoBook",
+    "price": 22000,
+    "quantity": 10
+  }
+]

@@ -1,7 +1,6 @@
 package com.example.app.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,7 +23,7 @@ public class OrderDetails {
 
   @ManyToOne
   @JoinColumn(name = "product_id")
-  @JsonManagedReference(value = "product-orderDetails")
+  @JsonBackReference(value = "product-orderDetails")
   private Product product;
 
   @ManyToOne
