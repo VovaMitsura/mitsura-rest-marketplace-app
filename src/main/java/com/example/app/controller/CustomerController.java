@@ -1,6 +1,6 @@
 package com.example.app.controller;
 
-import com.example.app.controller.dto.CustomerDto;
+import com.example.app.controller.dto.CustomerDTO;
 import com.example.app.model.User;
 import com.example.app.model.User.Role;
 import com.example.app.service.UserService;
@@ -29,18 +29,18 @@ public class CustomerController {
 
   @GetMapping()
   @PreAuthorize("hasAuthority('CUSTOMER')")
-  public ResponseEntity<List<CustomerDto>> getAllCustomers() {
+  public ResponseEntity<List<CustomerDTO>> getAllCustomers() {
     List<User> customers = customerService.getUsersByRole(Role.CUSTOMER);
-    List<CustomerDto> customerDTOs = customers.stream().map(CustomerDto::new).toList();
+    List<CustomerDTO> customerDTOS = customers.stream().map(CustomerDTO::new).toList();
 
-    return ResponseEntity.ok(customerDTOs);
+    return ResponseEntity.ok(customerDTOS);
   }
 
   @GetMapping(path = "/{id}")
   @PreAuthorize("hasAuthority('CUSTOMER')")
-  public ResponseEntity<CustomerDto> getUserById(@PathVariable("id") Long customerId) {
+  public ResponseEntity<CustomerDTO> getUserById(@PathVariable("id") Long customerId) {
     User user = customerService.getUserByIdAndRole(customerId, Role.CUSTOMER);
-    CustomerDto customerDTO = new CustomerDto(user);
+    CustomerDTO customerDTO = new CustomerDTO(user);
 
     return ResponseEntity.ok(customerDTO);
   }

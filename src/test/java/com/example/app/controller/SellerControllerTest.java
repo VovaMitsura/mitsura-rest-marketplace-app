@@ -1,7 +1,7 @@
 package com.example.app.controller;
 
 import com.example.app.RestMarketPlaceAppApplication;
-import com.example.app.controller.dto.ProductDto;
+import com.example.app.controller.dto.ProductDTO;
 import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.exception.ApplicationExceptionHandler.ErrorResponse;
 import com.example.app.model.Product;
@@ -56,7 +56,7 @@ class SellerControllerTest {
 
   private String jwtToken;
 
-  private ProductDto postProduct;
+  private ProductDTO postProduct;
 
   private Product responseProduct;
 
@@ -66,7 +66,7 @@ class SellerControllerTest {
         .addFilter(authenticationFilter).
         build();
 
-    postProduct = new ProductDto();
+    postProduct = new ProductDTO();
     postProduct.setName("Samsung a71");
     postProduct.setPrice(18000);
     postProduct.setQuantity(40);

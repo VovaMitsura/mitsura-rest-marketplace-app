@@ -9,7 +9,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class SellerDto {
+public class SellerDTO {
 
   private Long id;
   private String fullName;
@@ -17,7 +17,7 @@ public class SellerDto {
   private Role role;
   private List<Product> products;
 
-  public SellerDto(User seller) {
+  public SellerDTO(User seller) {
     this.id = seller.getId();
     this.fullName = seller.getFullName();
     this.email = seller.getEmail();
