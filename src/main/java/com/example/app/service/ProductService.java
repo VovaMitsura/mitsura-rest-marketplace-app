@@ -1,6 +1,6 @@
 package com.example.app.service;
 
-import com.example.app.controller.dto.ProductDto;
+import com.example.app.controller.dto.ProductDTO;
 import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.exception.NotFoundException;
 import com.example.app.model.Product;
@@ -26,7 +26,7 @@ public class ProductService {
     this.discountService = discountService;
   }
 
-  public Product createProduct(ProductDto productDto, User seller) {
+  public Product createProduct(ProductDTO productDto, User seller) {
     Product saveProduct = new Product();
 
     if (productDto.getDiscount() != null) {
@@ -61,7 +61,8 @@ public class ProductService {
 
     if (products.isEmpty()) {
       throw new NotFoundException(ApplicationExceptionHandler.PRODUCT_NOT_FOUND,
-          String.format("No product with price between [%d] and [%d] in store", minPrice, maxPrice));
+          String.format("No product with price between [%d] and [%d] in store", minPrice,
+              maxPrice));
     }
 
     return products;
@@ -79,6 +80,17 @@ public class ProductService {
     }
 
     return products;
+  }
+
+  public Product getProducById(Long productId) {
+    Optional<Product> optionalProduct = productRepository.findById(productId);
+
+    if (optionalProduct.isEmpty()) {
+      throw new NotFoundException(ApplicationExceptionHandler.PRODUCT_NOT_FOUND,
+          String.format("Product with id [%d] not found", productId));
+    }
+
+    return optionalProduct.get();
   }
 }
 

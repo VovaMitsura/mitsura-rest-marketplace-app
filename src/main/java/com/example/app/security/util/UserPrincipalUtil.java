@@ -10,5 +10,11 @@ public class UserPrincipalUtil {
         .getAuthentication().getPrincipal();
   }
 
+  public static String extractUserEmail(){
+    SimpleUserPrinciple userPrinciple = extractUserPrinciple();
+
+    return userPrinciple.getUsername();
+  }
+
 
 }

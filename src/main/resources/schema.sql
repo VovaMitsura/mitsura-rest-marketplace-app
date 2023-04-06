@@ -66,12 +66,9 @@ create table if not exists  Product(
 create table if not exists My_Order (
                                        id int primary key auto_increment,
                                        customer_id int,
-                                       city varchar(20),
-                                       street varchar (50),
-                                       zip varchar (10),
-                                       contact_phone varchar (12),
                                        total_amount int,
                                        date timestamp,
+                                       status varchar(7),
                                        foreign key (customer_id) references User (id)
                                            on delete cascade
                                            on update cascade

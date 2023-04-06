@@ -46,7 +46,7 @@ public class UserService {
     Optional<User> user = userRepository.findByEmail(email);
 
     return user.orElseThrow(() -> new NotFoundException(ApplicationExceptionHandler.USER_NOT_FOUND,
-        String.format("No exists [%s] in system", email)));
+        String.format("User with email [%s] not found", email)));
   }
 
 }

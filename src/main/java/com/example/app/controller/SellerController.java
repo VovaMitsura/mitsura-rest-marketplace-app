@@ -1,7 +1,7 @@
 package com.example.app.controller;
 
-import com.example.app.controller.dto.ProductDto;
-import com.example.app.controller.dto.SellerDto;
+import com.example.app.controller.dto.ProductDTO;
+import com.example.app.controller.dto.SellerDTO;
 import com.example.app.model.Product;
 import com.example.app.model.User;
 import com.example.app.model.User.Role;
@@ -37,7 +37,7 @@ public class SellerController {
 
   @PostMapping("/product")
   @PreAuthorize("hasAuthority('SELLER')")
-  public ResponseEntity<Product> addProductToTheSystem(@RequestBody ProductDto productDto) {
+  public ResponseEntity<Product> addProductToTheSystem(@RequestBody ProductDTO productDto) {
 
     SimpleUserPrinciple userPrinciple = UserPrincipalUtil.extractUserPrinciple();
 
@@ -49,18 +49,18 @@ public class SellerController {
 
   @GetMapping()
   @PreAuthorize("hasAuthority('SELLER')")
-  public ResponseEntity<List<SellerDto>> getAllSellers() {
+  public ResponseEntity<List<SellerDTO>> getAllSellers() {
     List<User> sellers = sellerService.getUsersByRole(Role.SELLER);
-    List<SellerDto> sellerDTOs = sellers.stream().map(SellerDto::new).toList();
+    List<SellerDTO> sellerDTOS = sellers.stream().map(SellerDTO::new).toList();
 
-    return ResponseEntity.ok(sellerDTOs);
+    return ResponseEntity.ok(sellerDTOS);
   }
 
   @GetMapping(path = "/{id}")
   @PreAuthorize("hasAuthority('SELLER')")
-  public ResponseEntity<SellerDto> getUserById(@PathVariable("id") Long sellerId) {
+  public ResponseEntity<SellerDTO> getUserById(@PathVariable("id") Long sellerId) {
     User seller = sellerService.getUserByIdAndRole(sellerId, Role.SELLER);
-    SellerDto sellerDto = new SellerDto(seller);
+    SellerDTO sellerDto = new SellerDTO(seller);
     return ResponseEntity.ok(sellerDto);
   }
 }

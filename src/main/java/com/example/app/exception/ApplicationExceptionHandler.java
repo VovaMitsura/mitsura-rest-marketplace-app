@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -17,6 +18,7 @@ public class ApplicationExceptionHandler {
   public static final String CATEGORY_NOT_FOUND = "category_not_found";
 
   public static final String PRODUCT_NOT_FOUND = "product_not_found";
+  public static final String ORDER_NOT_FOUND = "order_not_found";
   public static final String NO_PERMISSION = "no_permission";
   public static final String DUPLICATE_ENTRY = "duplicate_entry";
 
@@ -32,6 +34,13 @@ public class ApplicationExceptionHandler {
   @ExceptionHandler(ResourceConflictException.class)
   public ErrorResponse handleResourceConflictException(ResourceConflictException e) {
     return new ErrorResponse(e.getErrorCode(), e.getMessage());
+  }
+
+  @ResponseBody
+  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ErrorResponse handleInvalidArgumentException(MethodArgumentNotValidException e) {
+    return new ErrorResponse("invalid_input", e.getBody().getDetail());
   }
 
   @AllArgsConstructor

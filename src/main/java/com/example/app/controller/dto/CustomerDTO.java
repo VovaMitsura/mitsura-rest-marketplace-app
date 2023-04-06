@@ -10,7 +10,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CustomerDto {
+public class CustomerDTO {
 
   private Long id;
   private String fullName;
@@ -19,7 +19,7 @@ public class CustomerDto {
   private List<Bonus> bonuses;
   private List<Order> orders;
 
-  public CustomerDto(User customer) {
+  public CustomerDTO(User customer) {
     this.id = customer.getId();
     this.fullName = customer.getFullName();
     this.email = customer.getEmail();
