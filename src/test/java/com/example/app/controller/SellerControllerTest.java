@@ -72,7 +72,7 @@ class SellerControllerTest {
     postProduct.setQuantity(40);
 
     responseProduct = new Product();
-    responseProduct.setId(2L);
+    responseProduct.setId(5L);
     responseProduct.setName(postProduct.getName());
     responseProduct.setPrice(postProduct.getPrice());
     responseProduct.setQuantity(postProduct.getQuantity());

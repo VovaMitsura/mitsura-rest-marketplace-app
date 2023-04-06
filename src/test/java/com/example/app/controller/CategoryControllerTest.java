@@ -9,7 +9,9 @@ import com.example.app.model.User;
 import com.example.app.model.User.Role;
 import com.example.app.utils.TokenUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.HashMap;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,78 +34,81 @@ import org.springframework.web.context.WebApplicationContext;
 @SpringBootTest(classes = RestMarketPlaceAppApplication.class)
 class CategoryControllerTest {
 
-  private static final String BASE_URL = "/api/v1/category";
+    private static final String BASE_URL = "/api/v1/category";
 
-  @Autowired
-  WebApplicationContext webAppContext;
+    @Autowired
+    WebApplicationContext webAppContext;
 
-  @Autowired
-  ObjectMapper mapper;
+    @Autowired
+    ObjectMapper mapper;
 
-  MockMvc mockMvc;
+    MockMvc mockMvc;
 
-  String jwtToken;
+    String jwtToken;
 
-  CategoryDTO request;
-  Category response;
+    CategoryDTO request;
+    Category response;
 
-  @BeforeEach
-  public void setUp() {
-    this.mockMvc = MockMvcBuilders.webAppContextSetup(webAppContext)
-        .apply(SecurityMockMvcConfigurers.springSecurity()).build();
+    @BeforeEach
+    public void setUp() {
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(webAppContext)
+                .apply(SecurityMockMvcConfigurers.springSecurity()).build();
 
-    User user = User.builder().id(1L).fullName("Jack John").email("jack@mail.com")
-        .role(Role.ADMIN).password("123456").build();
+        User user = User.builder().id(1L).fullName("Jack John").email("jack@mail.com")
+                .role(Role.ADMIN).password("123456").build();
 
-    var roles = new HashMap<String, Object>();
-    roles.put("role", user.getRole());
-    jwtToken = TokenUtil.createToken(roles, user.getEmail());
+        var roles = new HashMap<String, Object>();
+        roles.put("role", user.getRole());
+        jwtToken = TokenUtil.createToken(roles, user.getEmail());
 
-    request = new CategoryDTO("laptop",
-        "A laptop, sometimes called a notebook computer by manufacturers, is a battery- "
-            + "or AC-powered personal computer (PC) smaller than a briefcase.");
+        request = new CategoryDTO("tablet computer",
+                "is a mobile device, typically with a mobile operating system and touchscreen display " +
+                        "processing circuitry, and a rechargeable battery in a single.");
+        response = Category.builder()
+                .id(3L)
+                .name("tablet computer")
+                .description("is a mobile device, typically with a mobile operating system and touchscreen display " +
+                        "processing circuitry, and a rechargeable battery in a single.")
+                .build();
+    }
 
-    response = Category.builder()
-        .id(2L)
-        .name("laptop")
-        .description(
-            "A laptop, sometimes called a notebook computer by manufacturers, is a battery-"
-                + " or AC-powered personal computer (PC) smaller than a briefcase.")
-        .build();
-  }
+    @Test
+    void addProductToMarketShouldReturnCreated() throws Exception {
 
-  @Test
-  void addProductToMarketShouldReturnCreated() throws Exception {
+        this.mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(request))
+                        .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andExpect(MockMvcResultMatchers.content().string(mapper.writeValueAsString(response)));
+    }
 
-    this.mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(mapper.writeValueAsString(request))
-            .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
-        .andExpect(MockMvcResultMatchers.status().isCreated())
-        .andExpect(MockMvcResultMatchers.content().string(mapper.writeValueAsString(response)));
-  }
+    @Test
+    void addAlreadyExistsProductShouldReturnConflict() throws Exception {
 
-  @Test
-  void addAlreadyExistsProductShouldReturnConflict() throws Exception {
+        request = new CategoryDTO("laptop",
+                "A laptop, sometimes called a notebook computer by manufacturers, is a battery- "
+                        + "or AC-powered personal computer (PC) smaller than a briefcase.");
 
-    final ErrorResponse errorResponse = new ErrorResponse(
-        ApplicationExceptionHandler.DUPLICATE_ENTRY,
-        String.format("Category [%s] already exists", request.getName()));
+        response = Category.builder()
+                .id(2L)
+                .name("laptop")
+                .description(
+                        "A laptop, sometimes called a notebook computer by manufacturers, is a battery-"
+                                + " or AC-powered personal computer (PC) smaller than a briefcase.")
+                .build();
 
-    this.mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(mapper.writeValueAsString(request))
-            .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
-        .andExpect(MockMvcResultMatchers.status().isCreated())
-        .andExpect(MockMvcResultMatchers.content().string(mapper.writeValueAsString(response)));
+        final ErrorResponse errorResponse = new ErrorResponse(
+                ApplicationExceptionHandler.DUPLICATE_ENTRY,
+                String.format("Category [%s] already exists", request.getName()));
 
-    this.mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(mapper.writeValueAsString(request))
-            .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
-        .andExpect(MockMvcResultMatchers.status().isConflict())
-        .andExpect(
-            MockMvcResultMatchers.content().string(mapper.writeValueAsString(errorResponse)));
-  }
+        this.mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(request))
+                        .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
+                .andExpect(MockMvcResultMatchers.status().isConflict())
+                .andExpect(
+                        MockMvcResultMatchers.content().string(mapper.writeValueAsString(errorResponse)));
+    }
 
 }

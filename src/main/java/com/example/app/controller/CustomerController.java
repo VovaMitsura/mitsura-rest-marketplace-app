@@ -26,7 +26,6 @@ public class CustomerController {
     this.customerService = customerService;
   }
 
-
   @GetMapping()
   @PreAuthorize("hasAuthority('CUSTOMER')")
   public ResponseEntity<List<CustomerDTO>> getAllCustomers() {

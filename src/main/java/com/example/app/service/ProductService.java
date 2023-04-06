@@ -61,7 +61,8 @@ public class ProductService {
 
     if (products.isEmpty()) {
       throw new NotFoundException(ApplicationExceptionHandler.PRODUCT_NOT_FOUND,
-          String.format("No product with price between [%d] and [%d] in store", minPrice, maxPrice));
+          String.format("No product with price between [%d] and [%d] in store", minPrice,
+              maxPrice));
     }
 
     return products;
@@ -79,6 +80,17 @@ public class ProductService {
     }
 
     return products;
+  }
+
+  public Product getProducById(Long productId) {
+    Optional<Product> optionalProduct = productRepository.findById(productId);
+
+    if (optionalProduct.isEmpty()) {
+      throw new NotFoundException(ApplicationExceptionHandler.PRODUCT_NOT_FOUND,
+          String.format("Product with id [%d] not found", productId));
+    }
+
+    return optionalProduct.get();
   }
 }
 
