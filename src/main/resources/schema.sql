@@ -68,6 +68,7 @@ create table if not exists My_Order (
                                        customer_id int,
                                        total_amount int,
                                        date timestamp,
+                                       status varchar(7),
                                        foreign key (customer_id) references User (id)
                                            on delete cascade
                                            on update cascade
