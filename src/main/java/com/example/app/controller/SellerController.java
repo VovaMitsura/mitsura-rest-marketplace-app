@@ -10,6 +10,8 @@ import com.example.app.security.util.UserPrincipalUtil;
 import com.example.app.service.ProductService;
 import com.example.app.service.UserService;
 import java.util.List;
+
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +39,7 @@ public class SellerController {
 
   @PostMapping("/product")
   @PreAuthorize("hasAuthority('SELLER')")
-  public ResponseEntity<Product> addProductToTheSystem(@RequestBody ProductDTO productDto) {
+  public ResponseEntity<Product> addProductToTheSystem(@Valid @RequestBody ProductDTO productDto) {
 
     SimpleUserPrinciple userPrinciple = UserPrincipalUtil.extractUserPrinciple();
 
