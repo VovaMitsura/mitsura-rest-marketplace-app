@@ -15,7 +15,6 @@ public class ProductDTO {
   private String name;
   @Min(1)
   private int price;
-  @NotBlank
   private String discount;
   @NotBlank
   private String category;
