@@ -68,6 +68,7 @@ class SellerControllerTest {
 
     postProduct = new ProductDTO();
     postProduct.setName("Samsung a71");
+    postProduct.setDiscount(null);
     postProduct.setPrice(18000);
     postProduct.setQuantity(40);
 
@@ -120,6 +121,7 @@ class SellerControllerTest {
   @Order(2)
   void postProductWithInvalidDiscountShouldReturnNotFound() throws Exception {
     postProduct.setDiscount("lol");
+    postProduct.setCategory("smartphone");
     ErrorResponse response = new ErrorResponse(ApplicationExceptionHandler.DISCOUNT_NOT_FOUND,
         String.format("discount with name: '%s' not found", postProduct.getDiscount()));
 

@@ -4,9 +4,10 @@ import com.example.app.model.Bonus;
 import com.example.app.model.Order;
 import com.example.app.model.User;
 import com.example.app.model.User.Role;
-import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
