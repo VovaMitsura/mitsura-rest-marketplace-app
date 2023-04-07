@@ -1,6 +1,6 @@
 package com.example.app.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -24,7 +24,7 @@ public class Order {
 
   @ManyToOne
   @JoinColumn(name = "customer_id")
-  @JsonIgnore
+  @JsonBackReference
   private User customer;
 
   @Column(name = "total_amount")

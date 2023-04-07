@@ -45,7 +45,7 @@ public class Product {
 
   @ManyToOne
   @JoinColumn(name = "seller_id")
-  @JsonIgnore
+  @JsonBackReference
   private User seller;
 
   private Integer quantity;
