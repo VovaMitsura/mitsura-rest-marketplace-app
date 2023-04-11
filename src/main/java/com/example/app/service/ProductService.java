@@ -82,7 +82,7 @@ public class ProductService {
     return products;
   }
 
-  public Product getProducById(Long productId) {
+  public Product getProductById(Long productId) {
     Optional<Product> optionalProduct = productRepository.findById(productId);
 
     if (optionalProduct.isEmpty()) {
