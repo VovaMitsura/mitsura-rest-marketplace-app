@@ -5,11 +5,14 @@ import com.example.app.exception.NotFoundException;
 import com.example.app.model.Product;
 import com.example.app.repository.ProductRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,80 +26,112 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @SpringBootTest(classes = ProductService.class)
 class ProductServiceTest {
 
-  @Autowired
-  ProductService productService;
+    @Autowired
+    ProductService productService;
 
-  @MockBean
-  ProductRepository productRepository;
-  @MockBean
-  CategoryService categoryService;
-  @MockBean
-  DiscountService discountService;
+    @MockBean
+    ProductRepository productRepository;
+    @MockBean
+    CategoryService categoryService;
+    @MockBean
+    DiscountService discountService;
 
-  ObjectMapper mapper = new ObjectMapper();
+    ObjectMapper mapper = new ObjectMapper();
 
-  private final int minPrice = 0;
-  private final int maxPrice = 1000000;
+    private final int minPrice = 0;
+    private final int maxPrice = 1000000;
 
-  List<Product> products;
+    List<Product> products;
 
-  @Test
-  void getProductWithOutCategoryShouldReturnAllValues() throws IOException {
+    @Test
+    void getProductWithOutCategoryShouldReturnAllValues() throws IOException {
 
-    Product[] productsArray = mapper.readValue(new File("src/test/resources/data/products.json"),
-        Product[].class);
-    products = Arrays.asList(productsArray);
+        Product[] productsArray = mapper.readValue(new File("src/test/resources/data/products.json"),
+                Product[].class);
+        products = Arrays.asList(productsArray);
 
-    Mockito.when(productRepository.findAllByPriceBetween(minPrice, maxPrice)).thenReturn(products);
+        Mockito.when(productRepository.findAllByPriceBetween(minPrice, maxPrice)).thenReturn(products);
 
-    List<Product> allProducts = productService.findAllByPriceBetween(minPrice, maxPrice);
+        List<Product> allProducts = productService.findAllByPriceBetween(minPrice, maxPrice);
 
-    Assertions.assertEquals(allProducts.size(), products.size());
-    Assertions.assertEquals("Samsung m53", allProducts.get(0).getName());
-    Assertions.assertEquals(22000, allProducts.get(1).getPrice());
-    Assertions.assertEquals(30, allProducts.get(2).getQuantity());
-    Assertions.assertEquals(4L, allProducts.get(3).getId());
-  }
+        Assertions.assertEquals(allProducts.size(), products.size());
+        Assertions.assertEquals("Samsung m53", allProducts.get(0).getName());
+        Assertions.assertEquals(22000, allProducts.get(1).getPrice());
+        Assertions.assertEquals(30, allProducts.get(2).getQuantity());
+        Assertions.assertEquals(4L, allProducts.get(3).getId());
+    }
 
-  @Test
-  void getProductWithInvalidPriceShouldReturnError() {
+    @Test
+    void getProductWithInvalidPriceShouldReturnError() {
 
-    Mockito.when(productRepository.findAllByPriceBetween(0, 0)).thenReturn(Collections.emptyList());
+        Mockito.when(productRepository.findAllByPriceBetween(0, 0)).thenReturn(Collections.emptyList());
 
-    NotFoundException notFound = Assertions.assertThrows(NotFoundException.class, () -> productService.findAllByPriceBetween(0, 0), String.format("No product with price between [%d] and [%d] in store", 0, 0));
+        NotFoundException notFound = Assertions.assertThrows(NotFoundException.class, () -> productService.findAllByPriceBetween(0, 0), String.format("No product with price between [%d] and [%d] in store", 0, 0));
 
-    Assertions.assertEquals(ApplicationExceptionHandler.PRODUCT_NOT_FOUND, notFound.getErrorCode());
+        Assertions.assertEquals(ApplicationExceptionHandler.PRODUCT_NOT_FOUND, notFound.getErrorCode());
 
-  }
+    }
 
-  @Test
-  void getProductWithCategorySmartphoneShouldReturnThreeValue() throws IOException {
+    @Test
+    void getProductWithCategorySmartphoneShouldReturnThreeValue() throws IOException {
 
-    Product[] productsArray = mapper.readValue(new File("src/test/resources/data/smartphones.json"),
-        Product[].class);
-    products = Arrays.asList(productsArray);
+        Product[] productsArray = mapper.readValue(new File("src/test/resources/data/smartphones.json"),
+                Product[].class);
+        products = Arrays.asList(productsArray);
 
-    Mockito.when(
-            productRepository.findAllByCategoryNameAndPriceBetween("smartphone", minPrice, maxPrice))
-        .thenReturn(products);
+        Mockito.when(
+                        productRepository.findAllByCategoryNameAndPriceBetween("smartphone", minPrice, maxPrice))
+                .thenReturn(products);
 
-    List<Product> allProducts = productService.findAllByCategoryAndPriceBetween("smartphone",
-        minPrice, maxPrice);
+        List<Product> allProducts = productService.findAllByCategoryAndPriceBetween("smartphone",
+                minPrice, maxPrice);
 
-    Assertions.assertEquals(allProducts.size(), products.size());
-    Assertions.assertEquals("Samsung m53", allProducts.get(0).getName());
-    Assertions.assertEquals("Samsung a54", allProducts.get(1).getName());
-    Assertions.assertEquals("Honor h2", allProducts.get(2).getName());
-  }
+        Assertions.assertEquals(allProducts.size(), products.size());
+        Assertions.assertEquals("Samsung m53", allProducts.get(0).getName());
+        Assertions.assertEquals("Samsung a54", allProducts.get(1).getName());
+        Assertions.assertEquals("Honor h2", allProducts.get(2).getName());
+    }
 
-  @Test
-  void getAllProductWithInvalidCategoryReturnError() {
-    Mockito.when(productRepository.findAllByCategoryNameAndPriceBetween("abc", 0, 0))
-        .thenReturn(Collections.emptyList());
+    @Test
+    void getAllProductWithInvalidCategoryReturnError() {
+        Mockito.when(productRepository.findAllByCategoryNameAndPriceBetween("abc", 0, 0))
+                .thenReturn(Collections.emptyList());
 
-    NotFoundException notFound = Assertions.assertThrows(NotFoundException.class, () -> productService.findAllByCategoryAndPriceBetween("abc", 0, 0), String.format("No product with category [%s] and price between [%d] and [%d] in store",
-        "abc", 0, 0));
-    Assertions.assertEquals(ApplicationExceptionHandler.PRODUCT_NOT_FOUND, notFound.getErrorCode());
+        NotFoundException notFound = Assertions.assertThrows(NotFoundException.class, () -> productService.findAllByCategoryAndPriceBetween("abc", 0, 0), String.format("No product with category [%s] and price between [%d] and [%d] in store",
+                "abc", 0, 0));
+        Assertions.assertEquals(ApplicationExceptionHandler.PRODUCT_NOT_FOUND, notFound.getErrorCode());
+    }
 
-  }
+    @Test
+    void getProductByIdShouldReturnOneValue() throws IOException {
+        Product[] productsArray = mapper.readValue(new File("src/test/resources/data/products.json"),
+                Product[].class);
+        products = Arrays.asList(productsArray);
+
+        Product actualProduct = products.get(0);
+
+        Mockito.when(productRepository.findById(1L))
+                .thenReturn(Optional.of(actualProduct));
+
+        Product productById = productService.getProductById((1L));
+
+        Assertions.assertNotNull(productById);
+        Assertions.assertEquals(actualProduct.getId(), productById.getId());
+        Assertions.assertEquals(actualProduct.getName(), productById.getName());
+        Assertions.assertEquals(actualProduct.getQuantity(), productById.getQuantity());
+        Assertions.assertEquals(actualProduct.getPrice(), productById.getPrice());
+    }
+
+    @Test
+    void getNonExistingProductShouldReturnNotFound() {
+        Mockito.when(productRepository.findById(10L))
+                .thenReturn(Optional.empty());
+
+        NotFoundException exception = Assertions.assertThrows(NotFoundException.class,
+                () -> productService.getProductById(10L));
+
+        Assertions.assertNotNull(exception);
+        Assertions.assertEquals(ApplicationExceptionHandler.PRODUCT_NOT_FOUND, exception.getErrorCode());
+        Assertions.assertEquals("Product with id [10] not found", exception.getMessage());
+    }
 }
