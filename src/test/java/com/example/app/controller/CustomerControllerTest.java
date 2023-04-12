@@ -1,11 +1,8 @@
 package com.example.app.controller;
 
 import com.example.app.model.User;
-import com.example.app.model.User.Role;
 import com.example.app.security.JwtAuthenticationFilter;
 import com.example.app.utils.TokenUtil;
-import java.util.HashMap;
-
 import com.example.app.utils.factory.CustomerFactory;
 import com.example.app.utils.factory.UserFactory;
 import org.junit.jupiter.api.BeforeEach;

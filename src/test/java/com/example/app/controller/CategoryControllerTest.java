@@ -6,14 +6,10 @@ import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.exception.ApplicationExceptionHandler.ErrorResponse;
 import com.example.app.model.Category;
 import com.example.app.model.User;
-import com.example.app.model.User.Role;
 import com.example.app.utils.TokenUtil;
 import com.example.app.utils.factory.AdminFactory;
 import com.example.app.utils.factory.UserFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.util.HashMap;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
