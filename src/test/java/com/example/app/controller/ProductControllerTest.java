@@ -7,6 +7,8 @@ import com.example.app.model.Product;
 import com.example.app.model.User;
 import com.example.app.repository.ProductRepository;
 import com.example.app.utils.TokenUtil;
+import com.example.app.utils.factory.AdminFactory;
+import com.example.app.utils.factory.UserFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,12 +55,10 @@ class ProductControllerTest {
                 .apply(SecurityMockMvcConfigurers.springSecurity())
                 .build();
 
-        User user = User.builder().id(1L).fullName("Jack John").email("jack@mail.com")
-                .role(User.Role.ADMIN).password("123456").build();
+        UserFactory factory = new AdminFactory();
+        User user =  factory.createUser();
 
-        var roles = new HashMap<String, Object>();
-        roles.put("role", user.getRole());
-        jwtToken = TokenUtil.createToken(roles, user.getEmail());
+        jwtToken = TokenUtil.createToken(user);
     }
 
     @Test
