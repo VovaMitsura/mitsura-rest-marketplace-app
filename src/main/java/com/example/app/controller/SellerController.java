@@ -16,15 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/seller")
+@PreAuthorize("hasAuthority('SELLER')")
 public class SellerController {
 
   private final ProductService productService;
@@ -38,7 +34,6 @@ public class SellerController {
 
 
   @PostMapping("/product")
-  @PreAuthorize("hasAuthority('SELLER')")
   public ResponseEntity<Product> addProductToTheSystem(@Valid @RequestBody ProductDTO productDto) {
 
     SimpleUserPrinciple userPrinciple = UserPrincipalUtil.extractUserPrinciple();
@@ -50,7 +45,6 @@ public class SellerController {
   }
 
   @GetMapping()
-  @PreAuthorize("hasAuthority('SELLER')")
   public ResponseEntity<List<SellerDTO>> getAllSellers() {
     List<User> sellers = sellerService.getUsersByRole(Role.SELLER);
     List<SellerDTO> sellerDTOS = sellers.stream().map(SellerDTO::new).toList();
@@ -59,10 +53,16 @@ public class SellerController {
   }
 
   @GetMapping(path = "/{id}")
-  @PreAuthorize("hasAuthority('SELLER')")
   public ResponseEntity<SellerDTO> getUserById(@PathVariable("id") Long sellerId) {
     User seller = sellerService.getUserByIdAndRole(sellerId, Role.SELLER);
     SellerDTO sellerDto = new SellerDTO(seller);
     return ResponseEntity.ok(sellerDto);
+  }
+
+
+  @PutMapping("product/{id}")
+  ResponseEntity<Product> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductDTO update) {
+    String userEmail = UserPrincipalUtil.extractUserEmail();
+    return new ResponseEntity<>(productService.updateProduct(id, update, userEmail), HttpStatus.ACCEPTED);
   }
 }
