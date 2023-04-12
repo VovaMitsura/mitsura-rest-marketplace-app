@@ -40,21 +40,17 @@ import java.util.Optional;
 @Sql(scripts = "/testSql/delete.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 class AuthenticationControllerTest {
 
+    private static final String BASE_URL = "/api/v1/auth";
+
     @Autowired
     private WebApplicationContext webApplicationContext;
-
     @Autowired
     private ObjectMapper mapper;
-
     @Autowired
     private UserRepository userRepository;
 
     private MockMvc mockMvc;
-
-    private static final String BASE_URL = "/api/v1/auth";
-
     private RegisterRequest registerRequest;
-
     private AuthenticationRequest authenticationRequest;
 
     @BeforeEach
@@ -120,9 +116,7 @@ class AuthenticationControllerTest {
 
         User currentUser = userRepository.findByEmail("john@mail.com").orElseThrow();
 
-        var roles = new HashMap<String, Object>();
-        roles.put("role", currentUser.getRole());
-        String jwtToken = TokenUtil.createToken(roles, currentUser.getEmail());
+        String jwtToken = TokenUtil.createToken(currentUser);
 
         MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL + "/me")
                         .contentType(MediaType.APPLICATION_JSON)

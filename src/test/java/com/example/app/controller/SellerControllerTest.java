@@ -6,19 +6,15 @@ import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.exception.ApplicationExceptionHandler.ErrorResponse;
 import com.example.app.model.Product;
 import com.example.app.model.User;
-import com.example.app.model.User.Role;
 import com.example.app.repository.UserRepository;
 import com.example.app.security.JwtAuthenticationFilter;
 import com.example.app.utils.TokenUtil;
+import com.example.app.utils.factory.SellerFactory;
+import com.example.app.utils.factory.UserFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.HashMap;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -41,133 +37,157 @@ import org.springframework.web.context.WebApplicationContext;
 @SpringBootTest(classes = RestMarketPlaceAppApplication.class)
 class SellerControllerTest {
 
-  private final String SELLER_URL = "/api/v1/seller";
-  @Autowired
-  private WebApplicationContext webAppContext;
-  @Autowired
-  private ObjectMapper objectMapper;
-  @Autowired
-  private UserRepository userRepository;
+    private final String SELLER_URL = "/api/v1/seller";
+    @Autowired
+    private WebApplicationContext webAppContext;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private JwtAuthenticationFilter authenticationFilter;
 
-  private MockMvc mockMvc;
+    private MockMvc mockMvc;
+    private String jwtToken;
+    private ProductDTO postProduct;
+    private Product responseProduct;
 
-  @Autowired
-  private JwtAuthenticationFilter authenticationFilter;
+    @BeforeEach
+    void setUp() {
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(webAppContext)
+                .addFilter(authenticationFilter).
+                build();
 
-  private String jwtToken;
+        postProduct = new ProductDTO();
+        postProduct.setName("Samsung a71");
+        postProduct.setDiscount(null);
+        postProduct.setPrice(18000);
+        postProduct.setQuantity(40);
 
-  private ProductDTO postProduct;
+        responseProduct = new Product();
+        responseProduct.setId(5L);
+        responseProduct.setName(postProduct.getName());
+        responseProduct.setPrice(postProduct.getPrice());
+        responseProduct.setQuantity(postProduct.getQuantity());
 
-  private Product responseProduct;
+        UserFactory factory = new SellerFactory();
+        User user = factory.createUser();
 
-  @BeforeEach
-  void setUp() {
-    this.mockMvc = MockMvcBuilders.webAppContextSetup(webAppContext)
-        .addFilter(authenticationFilter).
-        build();
+        jwtToken = TokenUtil.createToken(user);
+    }
 
-    postProduct = new ProductDTO();
-    postProduct.setName("Samsung a71");
-    postProduct.setDiscount(null);
-    postProduct.setPrice(18000);
-    postProduct.setQuantity(40);
+    @Test
+    @Order(5)
+    void postValidProductShouldReturnCreated() throws Exception {
 
-    responseProduct = new Product();
-    responseProduct.setId(5L);
-    responseProduct.setName(postProduct.getName());
-    responseProduct.setPrice(postProduct.getPrice());
-    responseProduct.setQuantity(postProduct.getQuantity());
+        postProduct.setCategory("smartphone");
 
-    User user = User.builder().id(1L)
-        .fullName("Tanya Smith")
-        .role(Role.SELLER)
-        .email("tanya@mail.com")
-        .password("123456")
-        .build();
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(SELLER_URL + "/product")
+                        .content(objectMapper.writeValueAsString(postProduct))
+                        .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken)
+                        .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isCreated()).andExpect(
+                        MockMvcResultMatchers.content()
+                                .string(objectMapper.writeValueAsString(responseProduct))).andReturn();
 
-    var roles = new HashMap<String, Object>();
-    roles.put("role", user.getRole());
-    jwtToken = TokenUtil.createToken(roles, user.getEmail());
-  }
+        JsonNode node = objectMapper.readTree(result.getResponse().getContentAsString());
 
-  @Test
-  @Order(5)
-  void postValidProductShouldReturnCreated() throws Exception {
+        Product response = new Product(node.get("id").asLong(), node.get("name").asText(),
+                node.get("price").asInt(), null, null, null,
+                node.get("quantity").asInt(), null);
 
-    postProduct.setCategory("smartphone");
+        Assertions.assertEquals(responseProduct.getId(), response.getId());
+        Assertions.assertEquals(responseProduct.getName(), response.getName());
+        Assertions.assertEquals(responseProduct.getCategory(), response.getCategory());
+        Assertions.assertEquals(responseProduct.getPrice(), response.getPrice());
+        Assertions.assertEquals(responseProduct.getCategory(), response.getCategory());
+    }
 
-    MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(SELLER_URL + "/product")
-            .content(objectMapper.writeValueAsString(postProduct))
-            .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken)
-            .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
-        .andExpect(MockMvcResultMatchers.status().isCreated()).andExpect(
-            MockMvcResultMatchers.content()
-                .string(objectMapper.writeValueAsString(responseProduct))).andReturn();
+    @Test
+    @Order(2)
+    void postProductWithInvalidDiscountShouldReturnNotFound() throws Exception {
+        postProduct.setDiscount("lol");
+        postProduct.setCategory("smartphone");
+        ErrorResponse response = new ErrorResponse(ApplicationExceptionHandler.DISCOUNT_NOT_FOUND,
+                String.format("discount with name: '%s' not found", postProduct.getDiscount()));
 
-    JsonNode node = objectMapper.readTree(result.getResponse().getContentAsString());
+        mockMvc.perform(MockMvcRequestBuilders.post(SELLER_URL + "/product")
+                        .content(objectMapper.writeValueAsString(postProduct))
+                        .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
+                        .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
+                .andExpect(MockMvcResultMatchers.status().isNotFound()).andExpect(
+                        MockMvcResultMatchers.content().string(objectMapper.writeValueAsString(response)));
+    }
 
-    Product response = new Product(node.get("id").asLong(), node.get("name").asText(),
-        node.get("price").asInt(), null, null, null,
-        node.get("quantity").asInt(), null);
+    @Test
+    @Order(3)
+    void postProductWithInvalidCategoryShouldReturnNotFound() throws Exception {
+        postProduct.setCategory("lol");
+        ErrorResponse response = new ErrorResponse(ApplicationExceptionHandler.CATEGORY_NOT_FOUND,
+                String.format("category with name: %s not found", postProduct.getCategory()));
 
-    Assertions.assertEquals(responseProduct.getId(), response.getId());
-    Assertions.assertEquals(responseProduct.getName(), response.getName());
-    Assertions.assertEquals(responseProduct.getCategory(), response.getCategory());
-    Assertions.assertEquals(responseProduct.getPrice(), response.getPrice());
-    Assertions.assertEquals(responseProduct.getCategory(), response.getCategory());
-  }
+        mockMvc.perform(
+                        MockMvcRequestBuilders.post(SELLER_URL + "/product").contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(postProduct))
+                                .accept(MediaType.APPLICATION_JSON)
+                                .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
+                .andExpect(MockMvcResultMatchers.status().isNotFound()).andExpect(
+                        MockMvcResultMatchers.content().string(objectMapper.writeValueAsString(response)));
+    }
 
-  @Test
-  @Order(2)
-  void postProductWithInvalidDiscountShouldReturnNotFound() throws Exception {
-    postProduct.setDiscount("lol");
-    postProduct.setCategory("smartphone");
-    ErrorResponse response = new ErrorResponse(ApplicationExceptionHandler.DISCOUNT_NOT_FOUND,
-        String.format("discount with name: '%s' not found", postProduct.getDiscount()));
+    @Test
+    @Order(4)
+    void getAllCustomersShouldReturnOneValue() throws Exception {
+        this.mockMvc.perform(MockMvcRequestBuilders.get(SELLER_URL)
+                        .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andDo(MockMvcResultHandlers.print());
+    }
 
-    mockMvc.perform(MockMvcRequestBuilders.post(SELLER_URL + "/product")
-            .content(objectMapper.writeValueAsString(postProduct))
-            .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
-            .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
-        .andExpect(MockMvcResultMatchers.status().isNotFound()).andExpect(
-            MockMvcResultMatchers.content().string(objectMapper.writeValueAsString(response)));
-  }
+    @Test
+    @Order(1)
+    void getCustomerByIdShouldReturnOneValues() throws Exception {
+        User byEmail = userRepository.findByEmail("tanya@mail.com").get();
 
-  @Test
-  @Order(3)
-  void postProductWithInvalidCategoryShouldReturnNotFound() throws Exception {
-    postProduct.setCategory("lol");
-    ErrorResponse response = new ErrorResponse(ApplicationExceptionHandler.CATEGORY_NOT_FOUND,
-        String.format("category with name: %s not found", postProduct.getCategory()));
+        this.mockMvc.perform(
+                        MockMvcRequestBuilders.get(SELLER_URL + String.format("/%d", byEmail.getId()))
+                                .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andDo(MockMvcResultHandlers.print());
+    }
 
-    mockMvc.perform(
-            MockMvcRequestBuilders.post(SELLER_URL + "/product").contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(postProduct))
-                .accept(MediaType.APPLICATION_JSON)
-                .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
-        .andExpect(MockMvcResultMatchers.status().isNotFound()).andExpect(
-            MockMvcResultMatchers.content().string(objectMapper.writeValueAsString(response)));
-  }
+    @Test
+    void updateProductShouldReturnAccepted() throws Exception {
+        ProductDTO request = new ProductDTO("Samsung m53", 16000, null, "smartphone", 5);
 
-  @Test
-  @Order(4)
-  void getAllCustomersShouldReturnOneValue() throws Exception {
-    this.mockMvc.perform(MockMvcRequestBuilders.get(SELLER_URL)
-            .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
-        .andExpect(MockMvcResultMatchers.status().isOk())
-        .andDo(MockMvcResultHandlers.print());
-  }
+        MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.put(SELLER_URL + "/product/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
+                .andExpect(MockMvcResultMatchers.status().isAccepted())
+                .andReturn();
 
-  @Test
-  @Order(1)
-  void getCustomerByIdShouldReturnOneValues() throws Exception {
-    User byEmail = userRepository.findByEmail("tanya@mail.com").get();
+        Product response = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Product.class);
 
-    this.mockMvc.perform(
-            MockMvcRequestBuilders.get(SELLER_URL + String.format("/%d", byEmail.getId()))
-                .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
-        .andExpect(MockMvcResultMatchers.status().isOk())
-        .andDo(MockMvcResultHandlers.print());
-  }
+        Assertions.assertEquals(1L, response.getId());
+        Assertions.assertEquals(request.getPrice(), response.getPrice());
+        Assertions.assertEquals(request.getName(), response.getName());
+        Assertions.assertEquals(request.getQuantity(), response.getQuantity());
+    }
+
+    @Test
+    void updateNonExistingProductShouldReturnException() throws Exception {
+        ProductDTO request = new ProductDTO("Samsung m53", 16000, null, "smartphone", 5);
+
+        ErrorResponse errorResponse = new ErrorResponse(ApplicationExceptionHandler.PRODUCT_NOT_FOUND,
+                String.format("User with email [%s] has no product with id [%d]", "tanya@mail.com", 10L));
+
+        this.mockMvc.perform(MockMvcRequestBuilders.put(SELLER_URL + "/product/10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andExpect(MockMvcResultMatchers.content().string(objectMapper.writeValueAsString(errorResponse)));
+    }
 
 }
