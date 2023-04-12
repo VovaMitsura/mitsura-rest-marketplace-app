@@ -42,7 +42,7 @@ public class OrderService {
 
         User customerByEmail = userService.getUserByEmail(userEmail);
 
-        Product product = productService.getProducById(productToOrder.getProductId());
+        Product product = productService.getProductById(productToOrder.getProductId());
 
         Order order;
 

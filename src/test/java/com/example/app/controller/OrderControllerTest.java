@@ -8,6 +8,8 @@ import com.example.app.model.Order;
 import com.example.app.model.User;
 import com.example.app.repository.OrderRepository;
 import com.example.app.utils.TokenUtil;
+import com.example.app.utils.factory.CustomerFactory;
+import com.example.app.utils.factory.UserFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +28,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.HashMap;
 import java.util.List;
 
 @ExtendWith(SpringExtension.class)
@@ -38,10 +39,8 @@ class OrderControllerTest {
 
     @Autowired
     WebApplicationContext webAppContext;
-
     @Autowired
     ObjectMapper mapper;
-
     @Autowired
     OrderRepository orderRepository;
 
@@ -57,16 +56,10 @@ class OrderControllerTest {
                 .apply(SecurityMockMvcConfigurers.springSecurity())
                 .build();
 
-        user = User.builder().id(1L)
-                .fullName("John Smith")
-                .email("john@mail.com")
-                .role(User.Role.CUSTOMER)
-                .password("123456")
-                .build();
+        UserFactory factory = new CustomerFactory();
+        user = factory.createUser();
 
-        var roles = new HashMap<String, Object>();
-        roles.put("role", user.getRole());
-        jwtToken = TokenUtil.createToken(roles, user.getEmail());
+        jwtToken = TokenUtil.createToken(user);
     }
 
     @Test

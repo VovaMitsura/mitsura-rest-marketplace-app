@@ -1,10 +1,10 @@
 package com.example.app.controller;
 
 import com.example.app.model.User;
-import com.example.app.model.User.Role;
 import com.example.app.security.JwtAuthenticationFilter;
 import com.example.app.utils.TokenUtil;
-import java.util.HashMap;
+import com.example.app.utils.factory.CustomerFactory;
+import com.example.app.utils.factory.UserFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
@@ -35,12 +35,10 @@ class CustomerControllerTest {
 
   @Autowired
   private WebApplicationContext webAppContext;
-
-  private MockMvc mockMvc;
-
   @Autowired
   private JwtAuthenticationFilter authenticationFilter;
 
+  private MockMvc mockMvc;
   private String jwtToken;
 
 
@@ -50,16 +48,10 @@ class CustomerControllerTest {
         .addFilter(authenticationFilter).
         build();
 
-    User user = User.builder().id(1L)
-        .fullName("John Smith")
-        .role(Role.CUSTOMER)
-        .email("john@mail.com")
-        .password("123456")
-        .build();
+    UserFactory factory = new CustomerFactory();
+    User user = factory.createUser();
 
-    var roles = new HashMap<String, Object>();
-    roles.put("role", user.getRole());
-    jwtToken = TokenUtil.createToken(roles, user.getEmail());
+    jwtToken = TokenUtil.createToken(user);
   }
 
   @Test

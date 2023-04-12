@@ -4,13 +4,13 @@ import com.example.app.RestMarketPlaceAppApplication;
 import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.exception.ApplicationExceptionHandler.ErrorResponse;
 import com.example.app.model.User;
-import com.example.app.model.User.Role;
 import com.example.app.repository.ProductRepository;
 import com.example.app.service.ProductService;
 import com.example.app.service.UserService;
 import com.example.app.utils.TokenUtil;
+import com.example.app.utils.factory.CustomerFactory;
+import com.example.app.utils.factory.UserFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.HashMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,7 +43,6 @@ class AccessDeniedHandlerAndAuthEntryPointTest {
 
   @MockBean
   ProductService productService;
-
   @MockBean
   ProductRepository productRepository;
   @MockBean
@@ -62,17 +61,10 @@ class AccessDeniedHandlerAndAuthEntryPointTest {
         .addFilter(authenticationFilter)
         .build();
 
-    User user = User.builder()
-        .id(1L)
-        .email("john@mail.com")
-        .role(Role.CUSTOMER)
-        .password("123456")
-        .build();
+    UserFactory factory = new CustomerFactory();
+    User user = factory.createUser();
 
-    var roles = new HashMap<String, Object>();
-    roles.put("role", user.getRole());
-
-    jwtToken = TokenUtil.createToken(roles, user.getEmail());
+    jwtToken = TokenUtil.createToken(user);
   }
 
   @Test
