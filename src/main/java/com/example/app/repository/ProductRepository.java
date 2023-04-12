@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
   Optional<Product> findProductByNameAndSellerFullName(String productName, String sellerFullName);
+  Optional<Product> findByIdAndSellerEmail(Long id, String sellerEmail);
   List<Product> findAllByPriceBetween(int price, int price2);
 
   List<Product> findAllByCategoryNameAndPriceBetween(String category, int price, int price2);
