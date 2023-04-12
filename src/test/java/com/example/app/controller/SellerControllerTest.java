@@ -6,6 +6,7 @@ import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.exception.ApplicationExceptionHandler.ErrorResponse;
 import com.example.app.model.Product;
 import com.example.app.model.User;
+import com.example.app.repository.ProductRepository;
 import com.example.app.repository.UserRepository;
 import com.example.app.security.JwtAuthenticationFilter;
 import com.example.app.utils.TokenUtil;
@@ -44,6 +45,8 @@ class SellerControllerTest {
     private ObjectMapper objectMapper;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ProductRepository productRepository;
     @Autowired
     private JwtAuthenticationFilter authenticationFilter;
 
@@ -188,6 +191,37 @@ class SellerControllerTest {
                         .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
                 .andExpect(MockMvcResultMatchers.content().string(objectMapper.writeValueAsString(errorResponse)));
+    }
+
+    @Test
+    void deleteProductShouldReturnOk() throws Exception{
+        Product current = productRepository.findById(1L).orElseThrow();
+
+        MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.delete(SELLER_URL + "/product/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        Product response = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Product.class);
+
+        Assertions.assertEquals(response.getId(), current.getId());
+        Assertions.assertEquals(response.getName(), current.getName());
+        Assertions.assertEquals(response.getPrice(), current.getPrice());
+    }
+
+    @Test
+    void deleteNonExistingProductShouldReturnException() throws Exception{
+
+        ErrorResponse errorResponse = new ErrorResponse(ApplicationExceptionHandler.PRODUCT_NOT_FOUND,
+                String.format("User with email [%s] has no product with id [%d]", "tanya@mail.com", 10L));
+
+       this.mockMvc.perform(MockMvcRequestBuilders.delete(SELLER_URL + "/product/10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andExpect(MockMvcResultMatchers.content().string(objectMapper.writeValueAsString(errorResponse)));
+
     }
 
 }

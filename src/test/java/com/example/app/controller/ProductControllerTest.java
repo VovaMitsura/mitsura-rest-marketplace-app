@@ -103,7 +103,7 @@ class ProductControllerTest {
 
     @Test
     void getProductByIdShouldReturnStatusOk() throws Exception {
-        Product product = productRepository.findById(1L).get();
+        Product product = productRepository.findById(1L).orElseThrow();
 
         MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.get(URL + "/1")
                         .contentType(MediaType.APPLICATION_JSON)
