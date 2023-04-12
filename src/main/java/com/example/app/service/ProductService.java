@@ -98,10 +98,10 @@ public class ProductService {
         return optionalProduct.get();
     }
 
-    public Product updateProduct(Long id, ProductDTO update, String userEmail) {
+    public Product update(Long id, ProductDTO update, String userEmail) {
         Product product = productRepository.findByIdAndSellerEmail(id, userEmail)
                 .orElseThrow(() -> new NotFoundException(ApplicationExceptionHandler.PRODUCT_NOT_FOUND,
-                       String.format("User with email [%s] has no product with id [%d]", userEmail, id)));
+                        String.format("User with email [%s] has no product with id [%d]", userEmail, id)));
 
         product.setName(update.getName());
         product.setQuantity(update.getQuantity());
@@ -117,6 +117,16 @@ public class ProductService {
         }
 
         return productRepository.save(product);
+    }
+
+    public Product delete(Long id, String userEmail) {
+        Product product = productRepository.findByIdAndSellerEmail(id, userEmail)
+                .orElseThrow(() -> new NotFoundException(ApplicationExceptionHandler.PRODUCT_NOT_FOUND,
+                        String.format("User with email [%s] has no product with id [%d]", userEmail, id)));
+
+        productRepository.delete(product);
+
+        return product;
     }
 }
 

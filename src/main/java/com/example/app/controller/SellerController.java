@@ -63,6 +63,12 @@ public class SellerController {
   @PutMapping("product/{id}")
   ResponseEntity<Product> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductDTO update) {
     String userEmail = UserPrincipalUtil.extractUserEmail();
-    return new ResponseEntity<>(productService.updateProduct(id, update, userEmail), HttpStatus.ACCEPTED);
+    return new ResponseEntity<>(productService.update(id, update, userEmail), HttpStatus.ACCEPTED);
+  }
+
+  @DeleteMapping("product/{id}")
+  ResponseEntity<Product> deleteProduct(@PathVariable Long id){
+    String userEmail = UserPrincipalUtil.extractUserEmail();
+    return new ResponseEntity<>(productService.delete(id, userEmail), HttpStatus.OK);
   }
 }
