@@ -23,33 +23,34 @@ import lombok.NoArgsConstructor;
 @Builder
 public class OrderDetails {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-  @ManyToOne
-  @JoinColumn(name = "product_id")
-  @JsonIgnore
-  private Product product;
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    @JsonIgnore
+    private Product product;
 
-  @Transient
-  private String productName;
+    @Transient
+    private String productName;
 
-  @ManyToOne()
-  @JoinColumn(name = "order_id")
-  @JsonBackReference
-  private Order order;
+    @ManyToOne()
+    @JoinColumn(name = "order_id")
+    @JsonBackReference
+    private Order order;
 
-  private int quantity;
+    private int quantity;
 
-  @Transient
-  public int getTotalPrice() {
-    return product.getPrice() * quantity;
-  }
+    @Transient
+    public int getTotalPrice() {
+        if (product != null) return product.getPrice() * quantity;
+        return 0;
+    }
 
-  @Transient
-  public String getProductName() {
-    return product.getName();
-  }
+    @Transient
+    public String getProductName() {
+        return product.getName();
+    }
 
 }
