@@ -5,7 +5,7 @@ import lombok.*;
 
 @Data
 @Builder
-public class ProductToOrderDTO {
+public class CreateOrderDTO {
 
   @Min(1)
   private Long orderId;

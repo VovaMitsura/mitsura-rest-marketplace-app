@@ -1,8 +1,11 @@
 package com.example.app.controller;
 
 import com.example.app.RestMarketPlaceAppApplication;
+import com.example.app.controller.dto.DeleteProductDTO;
 import com.example.app.controller.dto.OrderCreationResponseDTO;
-import com.example.app.controller.dto.ProductToOrderDTO;
+import com.example.app.controller.dto.CreateOrderDTO;
+import com.example.app.controller.dto.UpdateProductDTO;
+import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.exception.ApplicationExceptionHandler.ErrorResponse;
 import com.example.app.model.Order;
 import com.example.app.model.User;
@@ -29,6 +32,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.List;
+import java.util.Optional;
 
 @ExtendWith(SpringExtension.class)
 @Sql(scripts = {"/testSql/schema.sql", "/testSql/data.sql"})
@@ -47,7 +51,7 @@ class OrderControllerTest {
     MockMvc mockMvc;
     String jwtToken;
     User user;
-    ProductToOrderDTO request;
+    CreateOrderDTO request;
     OrderCreationResponseDTO response;
 
     @BeforeEach
@@ -85,7 +89,7 @@ class OrderControllerTest {
 
     @Test
     void addProductToExistingOrderShouldUpdateTotalAmount() throws Exception {
-        request = ProductToOrderDTO.builder()
+        request = CreateOrderDTO.builder()
                 .orderId(1L)
                 .productId(1L)
                 .quantity(1)
@@ -115,7 +119,7 @@ class OrderControllerTest {
 
     @Test
     void addProductWithInvalidBodyShouldThrowException() throws Exception {
-        request = ProductToOrderDTO.builder()
+        request = CreateOrderDTO.builder()
                 .orderId(-1L)
                 .productId(1L)
                 .quantity(1)
@@ -130,5 +134,95 @@ class OrderControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content().string(mapper.writeValueAsString(errorResponse)));
 
+    }
+
+    @Test
+    void getUserOrderByIdShouldReturnOk() throws Exception {
+
+        Order order = orderRepository.findByIdAndCustomerEmail(1L, user.getEmail()).orElseThrow();
+
+        this.mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL + "/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string(mapper.writeValueAsString(order)));
+    }
+
+    @Test
+    void updateProductQuantityInOrderShouldReturnOk() throws Exception {
+        UpdateProductDTO request = UpdateProductDTO.builder()
+                .quantity(2)
+                .name("Honor h2")
+                .build();
+
+        MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(request))
+                        .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        Order response = mapper.readValue(mvcResult.getResponse().getContentAsString(), Order.class);
+
+        Order updatedOrderFromRepository = orderRepository.findByIdAndCustomerEmail(1L, user.getEmail())
+                .orElseThrow();
+
+        Assertions.assertEquals(response.getId(), updatedOrderFromRepository.getId());
+        Assertions.assertEquals(17000, updatedOrderFromRepository.getTotalAmount());
+        Assertions.assertEquals(response.getOrderDetails().get(0).getQuantity(),
+                updatedOrderFromRepository.getOrderDetails().get(0).getQuantity());
+    }
+
+    @Test
+    void updateNonExistingProductInOrderShouldReturnException() throws Exception {
+        UpdateProductDTO request = UpdateProductDTO.builder()
+                .quantity(2)
+                .name("Honor h2")
+                .build();
+
+        ErrorResponse errorResponse = new ErrorResponse(ApplicationExceptionHandler.ORDER_NOT_FOUND,
+                String.format("No order of user [%s] with id [%d]",
+                        user.getEmail(), 10L));
+
+        this.mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(request))
+                        .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andExpect(MockMvcResultMatchers.content().string(mapper.writeValueAsString(errorResponse)));
+    }
+
+    @Test
+    void deleteOrderShouldReturnStatusOk() throws Exception {
+
+        Order currentOrder = orderRepository.findByIdAndCustomerEmail(1L, user.getEmail()).orElseThrow();
+
+        this.mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URL + "/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string(mapper.writeValueAsString(currentOrder)));
+
+        Optional<Order> isAnyExists = orderRepository.findByIdAndCustomerEmail(1L, user.getEmail());
+
+        Assertions.assertTrue(isAnyExists.isEmpty());
+    }
+
+    @Test
+    void deleteProductFromOrderShouldReturnOk() throws Exception {
+        DeleteProductDTO request = DeleteProductDTO.builder()
+                .name("Honor h2")
+                .build();
+
+        MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(request))
+                        .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        Order order = mapper.readValue(mvcResult.getResponse().getContentAsString(), Order.class);
+
+        Assertions.assertTrue(order.getOrderDetails().isEmpty());
     }
 }

@@ -18,42 +18,38 @@ import java.util.List;
 @NoArgsConstructor
 public class Order {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-  @ManyToOne
-  @JoinColumn(name = "customer_id")
-  @JsonBackReference
-  private User customer;
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+    @JsonBackReference
+    private User customer;
 
-  @Column(name = "total_amount")
-  private int totalAmount;
+    @Column(name = "total_amount")
+    private int totalAmount;
 
-  private Timestamp date;
+    private Timestamp date;
 
-  @OneToMany(mappedBy = "order", fetch= FetchType.EAGER)
-  @JsonManagedReference
-  private List<OrderDetails> orderDetails;
+    @OneToMany(mappedBy = "order", fetch = FetchType.EAGER)
+    @JsonManagedReference
+    private List<OrderDetails> orderDetails;
 
-  @Enumerated(EnumType.STRING)
-  private Status status;
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
-  public int getTotalAmount() {
-    return orderDetails.stream().mapToInt(OrderDetails::getTotalPrice)
-        .sum();
-  }
+    public int getTotalAmount() {
+        if (orderDetails != null) return orderDetails.stream().mapToInt(OrderDetails::getTotalPrice).sum();
+        return 0;
+    }
 
-  @Override
-  public String toString() {
-    return "Order{" +
-        "id=" + id +
-        ", total_amount=" + totalAmount +
-        ", date=" + date +
-        '}';
-  }
+    @Override
+    public String toString() {
+        return "Order{" + "id=" + id + ", total_amount=" + totalAmount + ", date=" + date + '}';
+    }
 
-  public enum Status{
-    CREATED, BOUGHT
-  }
+    public enum Status {
+        CREATED, BOUGHT
+    }
 }
