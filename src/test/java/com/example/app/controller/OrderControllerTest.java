@@ -180,9 +180,9 @@ class OrderControllerTest {
                 .name("Honor h2")
                 .build();
 
-        ErrorResponse errorResponse = new ErrorResponse(ApplicationExceptionHandler.PRODUCT_NOT_FOUND,
-                String.format("No product with name [%s] in order with id [%d] of user [%s]",
-                        request.getName(), 10L, user.getEmail()));
+        ErrorResponse errorResponse = new ErrorResponse(ApplicationExceptionHandler.ORDER_NOT_FOUND,
+                String.format("No order of user [%s] with id [%d]",
+                        user.getEmail(), 10L));
 
         this.mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/10")
                         .contentType(MediaType.APPLICATION_JSON)
