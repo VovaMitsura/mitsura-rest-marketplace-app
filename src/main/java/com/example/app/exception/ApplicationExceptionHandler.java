@@ -21,6 +21,8 @@ public class ApplicationExceptionHandler {
   public static final String ORDER_NOT_FOUND = "order_not_found";
   public static final String NO_PERMISSION = "no_permission";
   public static final String DUPLICATE_ENTRY = "duplicate_entry";
+  public static final String QUANTITY_CONFLICT = "quantity_conflict";
+  public static final String PAYMENT_EXCEPTION = "payment_exception";
 
   @ResponseBody
   @ResponseStatus(value = HttpStatus.NOT_FOUND)
@@ -41,6 +43,13 @@ public class ApplicationExceptionHandler {
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ErrorResponse handleInvalidArgumentException(MethodArgumentNotValidException e) {
     return new ErrorResponse("invalid_input", e.getBody().getDetail());
+  }
+
+  @ResponseBody
+  @ResponseStatus(value = HttpStatus.PAYMENT_REQUIRED)
+  @ExceptionHandler(PaymentException.class)
+  public ErrorResponse handlePaymentException(PaymentException e){
+    return new ErrorResponse(e.getErrorCode(), e.getMessage());
   }
 
   @AllArgsConstructor

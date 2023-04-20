@@ -1,6 +1,9 @@
 package com.example.app.service.stripe;
 
 import com.example.app.controller.dto.ProductDTO;
+import com.example.app.exception.ApplicationExceptionHandler;
+import com.example.app.exception.PaymentException;
+import com.example.app.exception.ResourceConflictException;
 import com.example.app.model.CreditCard;
 import com.example.app.model.Order;
 import com.example.app.model.OrderDetails;
@@ -41,10 +44,10 @@ class StripePaymentService implements PaymentProvider {
             Product ordederProduct = details.getProduct();
             Product productInMarket = productService.getProductById(ordederProduct.getId());
 
-            //TODO NOTSOMANYPRODUCTS exception
             if (details.getQuantity() > productInMarket.getQuantity()) {
-                throw new RuntimeException(String.format("There are not so quantity [%d] goods [%s] " +
-                        "in market", ordederProduct.getQuantity(), ordederProduct.getName()));
+                throw new ResourceConflictException(ApplicationExceptionHandler.QUANTITY_CONFLICT,
+                        String.format("There are not so quantity [%d] goods [%s] " + "in market",
+                                ordederProduct.getQuantity(), ordederProduct.getName()));
             }
         }
 
@@ -86,12 +89,12 @@ class StripePaymentService implements PaymentProvider {
         metaParams.put("order_id", order.getId());
         chargeParams.put("metadata", metaParams);
 
-
-        //TODO add paymentException
         try {
             return Charge.create(chargeParams);
         } catch (StripeException e) {
-            throw new RuntimeException(e);
+            throw new PaymentException(ApplicationExceptionHandler.PAYMENT_EXCEPTION,
+                    String.format("Exception occur during paying for order [%d] with error [%s]",
+                            order.getId(), e.getMessage()));
         }
     }
 
