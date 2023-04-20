@@ -16,3 +16,7 @@ spring:
       mode: always
 jwt:
   secret: ${JWT_SECRET}
+
+stripe:
+  secret:
+    key: ${STRIPE.SECRET}
