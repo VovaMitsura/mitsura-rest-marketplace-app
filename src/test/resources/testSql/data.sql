@@ -28,10 +28,10 @@ values ('smartphone', 'smart gadgets for teenagers'),
 for short, is a small, portable personal computer (PC).');
 
 insert into product (name, price, discount_id, category_id, seller_id, quantity)
-values ('Samsung m53', 17500, null, 1, 5, 15),
-       ('Samsung a54', 22000, null, 1, 5, 20),
-       ('Honor h2', 8500, null, 1, 5, 30),
-       ('Asus vivoBook', 22000, null, 2, 5, 10);
+values ('Samsung m53', 320, null, 1, 5, 15),
+       ('Samsung a54', 370, null, 1, 5, 20),
+       ('Honor h2', 225, null, 1, 5, 30),
+       ('Asus vivoBook', 380, null, 2, 5, 10);
 
 insert into my_order (customer_id, total_amount, date, status)
 values (1, 8500, now(), 'CREATED');
