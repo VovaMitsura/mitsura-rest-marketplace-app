@@ -168,7 +168,7 @@ class OrderControllerTest {
                 .orElseThrow();
 
         Assertions.assertEquals(response.getId(), updatedOrderFromRepository.getId());
-        Assertions.assertEquals(17000, updatedOrderFromRepository.getTotalAmount());
+        Assertions.assertEquals(450, updatedOrderFromRepository.getTotalAmount());
         Assertions.assertEquals(response.getOrderDetails().get(0).getQuantity(),
                 updatedOrderFromRepository.getOrderDetails().get(0).getQuantity());
     }

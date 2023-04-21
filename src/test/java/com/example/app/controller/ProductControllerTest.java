@@ -62,9 +62,9 @@ class ProductControllerTest {
 
     @Test
     void getAllProductsWithPriceFiltersShouldReturnList() throws Exception {
-        List<Product> allByPriceBetween = productRepository.findAllByPriceBetween(8500, 18000);
+        List<Product> allByPriceBetween = productRepository.findAllByPriceBetween(225, 320);
 
-        MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.get(URL + "?min=8000&max=18000")
+        MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.get(URL + "?min=225&max=320")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
                 .andExpect(MockMvcResultMatchers.status().isOk())
