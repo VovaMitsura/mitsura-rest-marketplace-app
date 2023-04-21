@@ -4,14 +4,12 @@ import com.example.app.controller.dto.ProductDTO;
 import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.exception.PaymentException;
 import com.example.app.exception.ResourceConflictException;
-import com.example.app.model.*;
+import com.example.app.model.CreditCard;
+import com.example.app.model.Order;
+import com.example.app.model.OrderDetails;
+import com.example.app.model.Product;
 import com.example.app.repository.OrderRepository;
-import com.example.app.repository.ProductRepository;
-import com.example.app.service.CategoryService;
-import com.example.app.service.DiscountService;
 import com.example.app.service.ProductService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.stripe.model.Charge;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +20,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.sql.Timestamp;
 import java.util.List;
 
 

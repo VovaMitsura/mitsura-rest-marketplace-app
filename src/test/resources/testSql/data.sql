@@ -34,7 +34,7 @@ values ('Samsung m53', 320, null, 1, 5, 15),
        ('Asus vivoBook', 380, null, 2, 5, 10);
 
 insert into my_order (customer_id, total_amount, date, status)
-values (1, 8500, now(), 'CREATED');
+values (1, 225, now(), 'CREATED');
 
 insert into order_details (id, product_id, order_id, quantity)
 values (1, 3, 1, 1);
