@@ -1,10 +1,12 @@
 package com.example.app.model;
 
 import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
 @Data
+@AllArgsConstructor
 public class CreditCard {
 
     @Pattern(regexp =
