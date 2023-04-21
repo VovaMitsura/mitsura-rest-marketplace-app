@@ -24,7 +24,7 @@ import java.util.Map;
 
 
 @Service
-class StripePaymentService implements PaymentProvider {
+public class StripePaymentService implements PaymentProvider {
 
     private final ProductService productService;
     private final OrderRepository orderRepository;
@@ -98,7 +98,7 @@ class StripePaymentService implements PaymentProvider {
         }
     }
 
-    private String createStripeToken(CreditCard card) {
+    private String createStripeToken(CreditCard card) throws PaymentException {
 
         Map<String, Object> cardParams = new HashMap<>();
 
@@ -116,7 +116,8 @@ class StripePaymentService implements PaymentProvider {
         try {
             token = Token.create(params);
         } catch (StripeException e) {
-            throw new IllegalStateException(e);
+            throw new PaymentException(ApplicationExceptionHandler.TOKEN_EXCEPTION,
+                    String.format("Exception during stripe token creation [%s]", e.getMessage()));
         }
 
         return token.getId();

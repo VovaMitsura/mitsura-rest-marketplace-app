@@ -37,7 +37,7 @@ class PaymentController {
         PaymentResponseDTO response = PaymentResponseDTO.builder()
                 .status(payed.getStatus())
                 .order(order)
-                .amount(payed.getAmount())
+                .amount(payed.getAmount() / 100)
                 .build();
 
         return ResponseEntity.ok(response);
