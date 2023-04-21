@@ -16,13 +16,13 @@ public class ApplicationExceptionHandler {
   public static final String USER_NOT_FOUND = "user_not_found";
   public static final String DISCOUNT_NOT_FOUND = "discount_not_found";
   public static final String CATEGORY_NOT_FOUND = "category_not_found";
-
   public static final String PRODUCT_NOT_FOUND = "product_not_found";
   public static final String ORDER_NOT_FOUND = "order_not_found";
   public static final String NO_PERMISSION = "no_permission";
   public static final String DUPLICATE_ENTRY = "duplicate_entry";
   public static final String QUANTITY_CONFLICT = "quantity_conflict";
   public static final String PAYMENT_EXCEPTION = "payment_exception";
+  public static final String TOKEN_EXCEPTION = "token_exception";
 
   @ResponseBody
   @ResponseStatus(value = HttpStatus.NOT_FOUND)
