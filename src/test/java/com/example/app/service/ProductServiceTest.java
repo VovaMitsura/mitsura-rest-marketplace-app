@@ -1,8 +1,11 @@
 package com.example.app.service;
 
+import com.example.app.controller.dto.DiscountDTO;
 import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.exception.NotFoundException;
+import com.example.app.model.Discount;
 import com.example.app.model.Product;
+import com.example.app.repository.DiscountRepository;
 import com.example.app.repository.ProductRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -35,6 +38,8 @@ class ProductServiceTest {
     CategoryService categoryService;
     @MockBean
     DiscountService discountService;
+    @MockBean
+    DiscountRepository discountRepository;
 
     ObjectMapper mapper = new ObjectMapper();
 
@@ -133,5 +138,32 @@ class ProductServiceTest {
         Assertions.assertNotNull(exception);
         Assertions.assertEquals(ApplicationExceptionHandler.PRODUCT_NOT_FOUND, exception.getErrorCode());
         Assertions.assertEquals("Product with id [10] not found", exception.getMessage());
+    }
+
+    @Test
+    void addDiscountToProduct() throws Exception {
+
+        Product[] productsArray = mapper.readValue(new File("src/test/resources/data/products.json"),
+                Product[].class);
+        products = Arrays.asList(productsArray);
+        Product product = products.get(0);
+        String sellerEmail = "john@mail.com";
+        DiscountDTO discountDTO = new DiscountDTO("Happy New Year disc.", 30);
+        Discount discountToAdd = new Discount(1L, discountDTO.getName(), discountDTO.getPercentage(), null);
+
+        Mockito.when(productRepository.findByIdAndSellerEmail(1L, sellerEmail))
+                .thenReturn(Optional.of(product));
+        Mockito.when(discountRepository.findByName(discountDTO.getName()))
+                .thenReturn(Optional.empty());
+        Mockito.when(discountRepository.save(Mockito.any(Discount.class)))
+                .thenReturn(discountToAdd);
+        Mockito.when(productRepository.save(Mockito.any()))
+                .thenReturn(product);
+
+        Product response = productService.addDiscountToProduct(1L, sellerEmail, discountDTO);
+
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals(response.getDiscount().getName(), discountDTO.getName());
+        Assertions.assertEquals(response.getDiscount().getDiscountPercent(), discountDTO.getPercentage());
     }
 }
