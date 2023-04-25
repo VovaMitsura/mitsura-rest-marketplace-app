@@ -2,6 +2,7 @@ package com.example.app.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -35,12 +36,13 @@ public class Product {
 
   @ManyToOne
   @JoinColumn(name = "discount_id")
-  @JsonBackReference(value = "product-discount")
+  @JsonIgnoreProperties(value = "products")
   private Discount discount;
 
   @ManyToOne
   @JoinColumn(name = "category_id")
-  @JsonBackReference(value = "product-category")
+  //@JsonBackReference(value = "product-category")
+  @JsonIgnoreProperties(value = "products")
   private Category category;
 
   @ManyToOne
