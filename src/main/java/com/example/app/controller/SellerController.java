@@ -1,5 +1,6 @@
 package com.example.app.controller;
 
+import com.example.app.controller.dto.DiscountDTO;
 import com.example.app.controller.dto.ProductDTO;
 import com.example.app.controller.dto.SellerDTO;
 import com.example.app.model.Product;
@@ -9,14 +10,14 @@ import com.example.app.security.SimpleUserPrinciple;
 import com.example.app.security.util.UserPrincipalUtil;
 import com.example.app.service.ProductService;
 import com.example.app.service.UserService;
-import java.util.List;
-
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/seller")
@@ -60,15 +61,25 @@ public class SellerController {
   }
 
 
-  @PutMapping("product/{id}")
-  ResponseEntity<Product> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductDTO update) {
-    String userEmail = UserPrincipalUtil.extractUserEmail();
-    return new ResponseEntity<>(productService.update(id, update, userEmail), HttpStatus.ACCEPTED);
-  }
+    @PutMapping("/product/{id}")
+    ResponseEntity<Product> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductDTO update) {
+        String userEmail = UserPrincipalUtil.extractUserEmail();
+        return new ResponseEntity<>(productService.update(id, update, userEmail), HttpStatus.ACCEPTED);
+    }
 
-  @DeleteMapping("product/{id}")
-  ResponseEntity<Product> deleteProduct(@PathVariable Long id){
-    String userEmail = UserPrincipalUtil.extractUserEmail();
-    return new ResponseEntity<>(productService.delete(id, userEmail), HttpStatus.OK);
-  }
+    @DeleteMapping("/product/{id}")
+    ResponseEntity<Product> deleteProduct(@PathVariable Long id) {
+        String userEmail = UserPrincipalUtil.extractUserEmail();
+        return new ResponseEntity<>(productService.delete(id, userEmail), HttpStatus.OK);
+    }
+
+    @PostMapping("/product/{id}/discounts")
+    ResponseEntity<ProductDTO> addDiscountToProduct(@PathVariable Long id,
+                                                  @Valid @RequestBody DiscountDTO req) {
+        String userEmail = UserPrincipalUtil.extractUserEmail();
+        Product product = productService.addDiscountToProduct(id, userEmail, req);
+        ProductDTO response = new ProductDTO(product.getName(), product.getPrice(),
+                product.getDiscount().getName(), product.getCategory().getName(), product.getQuantity());
+        return ResponseEntity.ok(response);
+    }
 }
