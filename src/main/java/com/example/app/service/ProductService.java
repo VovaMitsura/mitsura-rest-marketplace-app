@@ -1,12 +1,15 @@
 package com.example.app.service;
 
+import com.example.app.controller.dto.DiscountDTO;
 import com.example.app.controller.dto.ProductDTO;
 import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.exception.NotFoundException;
+import com.example.app.exception.ResourceConflictException;
 import com.example.app.model.Category;
 import com.example.app.model.Discount;
 import com.example.app.model.Product;
 import com.example.app.model.User;
+import com.example.app.repository.DiscountRepository;
 import com.example.app.repository.ProductRepository;
 
 import java.util.List;
@@ -20,13 +23,15 @@ import org.springframework.stereotype.Service;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final DiscountRepository discountRepository;
     private final CategoryService categoryService;
     private final DiscountService discountService;
 
     @Autowired
-    public ProductService(ProductRepository productRepository, CategoryService categoryService,
+    public ProductService(ProductRepository productRepository, DiscountRepository discountRepository, CategoryService categoryService,
                           DiscountService discountService) {
         this.productRepository = productRepository;
+        this.discountRepository = discountRepository;
         this.categoryService = categoryService;
         this.discountService = discountService;
     }
@@ -127,6 +132,36 @@ public class ProductService {
         productRepository.delete(product);
 
         return product;
+    }
+
+    public Product addDiscountToProduct(Long productId, String userEmail, DiscountDTO discountDTO) {
+        Product currentProduct = productRepository.findByIdAndSellerEmail(productId, userEmail)
+                .orElseThrow(() -> new NotFoundException(ApplicationExceptionHandler.PRODUCT_NOT_FOUND,
+                        String.format("User with email [%s] has no product with id [%d]", userEmail, productId)));
+
+        Discount productDisc = currentProduct.getDiscount();
+        if (Objects.nonNull(productDisc) && productDisc.getName().equals(discountDTO.getName())) {
+            throw new ResourceConflictException(ApplicationExceptionHandler.DUPLICATE_ENTRY,
+                    String.format("Discount with name [%s] for product [%s] already exists", currentProduct.getName(),
+                            discountDTO.getName()));
+        }
+
+        Optional<Discount> optionalDiscount = discountRepository.findByName(discountDTO.getName());
+        Discount discount;
+
+        if (optionalDiscount.isPresent()) {
+            discount = optionalDiscount.get();
+        } else {
+            discount = new Discount();
+            discount.setName(discountDTO.getName());
+            discount.setDiscountPercent(discountDTO.getPercentage());
+            discount = discountRepository.save(discount);
+        }
+
+        currentProduct.setDiscount(discount);
+        currentProduct = productRepository.save(currentProduct);
+
+        return currentProduct;
     }
 }
 
