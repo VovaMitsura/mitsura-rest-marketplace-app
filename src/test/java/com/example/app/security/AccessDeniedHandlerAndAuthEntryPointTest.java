@@ -50,7 +50,7 @@ class AccessDeniedHandlerAndAuthEntryPointTest {
 
   private MockMvc mockMvc;
 
-  private static final String URL = "/api/v1/seller";
+  private static final String URL = "/api/v1/sellers";
 
   private String jwtToken;
 

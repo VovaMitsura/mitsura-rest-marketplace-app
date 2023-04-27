@@ -39,7 +39,7 @@ import java.util.Optional;
 @Sql(scripts = "/testSql/delete.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @SpringBootTest(classes = RestMarketPlaceAppApplication.class)
 class OrderControllerTest {
-    private static final String BASE_URL = "/api/v1/order";
+    private static final String BASE_URL = "/api/v1/orders";
 
     @Autowired
     WebApplicationContext webAppContext;

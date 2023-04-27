@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/product")
+@RequestMapping("/api/v1/products")
 @PreAuthorize("hasAnyAuthority('CUSTOMER', 'SELLER', 'ADMIN')")
 @RequiredArgsConstructor
 public class ProductController {

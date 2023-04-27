@@ -34,7 +34,7 @@ import java.util.List;
 @Sql(scripts = "/testSql/delete.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @SpringBootTest(classes = RestMarketPlaceAppApplication.class)
 class ProductControllerTest {
-    private static final String URL = "/api/v1/product";
+    private static final String URL = "/api/v1/products";
 
     @Autowired
     WebApplicationContext webAppContext;
