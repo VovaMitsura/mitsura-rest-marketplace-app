@@ -104,9 +104,7 @@ public class ProductService {
     }
 
     public Product update(Long id, ProductDTO update, String userEmail) {
-        Product product = productRepository.findByIdAndSellerEmail(id, userEmail)
-                .orElseThrow(() -> new NotFoundException(ApplicationExceptionHandler.PRODUCT_NOT_FOUND,
-                        String.format("User with email [%s] has no product with id [%d]", userEmail, id)));
+        Product product = getProductByIdAndSellerEmail(id, userEmail);
 
         product.setName(update.getName());
         product.setQuantity(update.getQuantity());
@@ -125,19 +123,21 @@ public class ProductService {
     }
 
     public Product delete(Long id, String userEmail) {
-        Product product = productRepository.findByIdAndSellerEmail(id, userEmail)
-                .orElseThrow(() -> new NotFoundException(ApplicationExceptionHandler.PRODUCT_NOT_FOUND,
-                        String.format("User with email [%s] has no product with id [%d]", userEmail, id)));
+        Product product = getProductByIdAndSellerEmail(id, userEmail);
 
         productRepository.delete(product);
 
         return product;
     }
 
-    public Product addDiscountToProduct(Long productId, String userEmail, DiscountDTO discountDTO) {
-        Product currentProduct = productRepository.findByIdAndSellerEmail(productId, userEmail)
+    public Product getProductByIdAndSellerEmail(Long id, String email){
+        return productRepository.findByIdAndSellerEmail(id, email)
                 .orElseThrow(() -> new NotFoundException(ApplicationExceptionHandler.PRODUCT_NOT_FOUND,
-                        String.format("User with email [%s] has no product with id [%d]", userEmail, productId)));
+                        String.format("User with email [%s] has no product with id [%d]", email, id)));
+    }
+
+    public Product addDiscountToProduct(Long productId, String userEmail, DiscountDTO discountDTO) {
+        Product currentProduct = getProductByIdAndSellerEmail(productId, userEmail);
 
         Discount productDisc = currentProduct.getDiscount();
         if (Objects.nonNull(productDisc) && productDisc.getName().equals(discountDTO.getName())) {
