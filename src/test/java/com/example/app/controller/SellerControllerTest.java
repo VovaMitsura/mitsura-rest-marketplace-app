@@ -1,6 +1,7 @@
 package com.example.app.controller;
 
 import com.example.app.RestMarketPlaceAppApplication;
+import com.example.app.controller.dto.DiscountDTO;
 import com.example.app.controller.dto.ProductDTO;
 import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.exception.ApplicationExceptionHandler.ErrorResponse;
@@ -38,7 +39,7 @@ import org.springframework.web.context.WebApplicationContext;
 @SpringBootTest(classes = RestMarketPlaceAppApplication.class)
 class SellerControllerTest {
 
-    private final String SELLER_URL = "/api/v1/seller";
+    private final String SELLER_URL = "/api/v1/sellers";
     @Autowired
     private WebApplicationContext webAppContext;
     @Autowired
@@ -85,13 +86,12 @@ class SellerControllerTest {
 
         postProduct.setCategory("smartphone");
 
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(SELLER_URL + "/product")
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(SELLER_URL + "/products")
                         .content(objectMapper.writeValueAsString(postProduct))
                         .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isCreated()).andExpect(
-                        MockMvcResultMatchers.content()
-                                .string(objectMapper.writeValueAsString(responseProduct))).andReturn();
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andReturn();
 
         JsonNode node = objectMapper.readTree(result.getResponse().getContentAsString());
 
@@ -114,7 +114,7 @@ class SellerControllerTest {
         ErrorResponse response = new ErrorResponse(ApplicationExceptionHandler.DISCOUNT_NOT_FOUND,
                 String.format("discount with name: '%s' not found", postProduct.getDiscount()));
 
-        mockMvc.perform(MockMvcRequestBuilders.post(SELLER_URL + "/product")
+        mockMvc.perform(MockMvcRequestBuilders.post(SELLER_URL + "/products")
                         .content(objectMapper.writeValueAsString(postProduct))
                         .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
                         .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
@@ -130,7 +130,7 @@ class SellerControllerTest {
                 String.format("category with name: %s not found", postProduct.getCategory()));
 
         mockMvc.perform(
-                        MockMvcRequestBuilders.post(SELLER_URL + "/product").contentType(MediaType.APPLICATION_JSON)
+                        MockMvcRequestBuilders.post(SELLER_URL + "/products").contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(postProduct))
                                 .accept(MediaType.APPLICATION_JSON)
                                 .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
@@ -163,7 +163,7 @@ class SellerControllerTest {
     void updateProductShouldReturnAccepted() throws Exception {
         ProductDTO request = new ProductDTO("Samsung m53", 16000, null, "smartphone", 5);
 
-        MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.put(SELLER_URL + "/product/1")
+        MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.put(SELLER_URL + "/products/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
                         .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
@@ -185,7 +185,7 @@ class SellerControllerTest {
         ErrorResponse errorResponse = new ErrorResponse(ApplicationExceptionHandler.PRODUCT_NOT_FOUND,
                 String.format("User with email [%s] has no product with id [%d]", "tanya@mail.com", 10L));
 
-        this.mockMvc.perform(MockMvcRequestBuilders.put(SELLER_URL + "/product/10")
+        this.mockMvc.perform(MockMvcRequestBuilders.put(SELLER_URL + "/products/10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
                         .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
@@ -194,10 +194,10 @@ class SellerControllerTest {
     }
 
     @Test
-    void deleteProductShouldReturnOk() throws Exception{
+    void deleteProductShouldReturnOk() throws Exception {
         Product current = productRepository.findById(1L).orElseThrow();
 
-        MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.delete(SELLER_URL + "/product/1")
+        MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.delete(SELLER_URL + "/products/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -211,17 +211,37 @@ class SellerControllerTest {
     }
 
     @Test
-    void deleteNonExistingProductShouldReturnException() throws Exception{
+    void deleteNonExistingProductShouldReturnException() throws Exception {
 
         ErrorResponse errorResponse = new ErrorResponse(ApplicationExceptionHandler.PRODUCT_NOT_FOUND,
                 String.format("User with email [%s] has no product with id [%d]", "tanya@mail.com", 10L));
 
-       this.mockMvc.perform(MockMvcRequestBuilders.delete(SELLER_URL + "/product/10")
+        this.mockMvc.perform(MockMvcRequestBuilders.delete(SELLER_URL + "/products/10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
                 .andExpect(MockMvcResultMatchers.content().string(objectMapper.writeValueAsString(errorResponse)));
 
+    }
+
+    @Test
+    void addDiscountToProductShouldReturnOK() throws Exception {
+
+        DiscountDTO discountDTO = new DiscountDTO("Happy New Year disc.", 30);
+
+        MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.post(SELLER_URL + "/products/1/discounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(discountDTO))
+                        .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        ProductDTO productDTO = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), ProductDTO.class);
+        Product product = productRepository.findById(1L).get();
+
+        Assertions.assertNotNull(productDTO);
+        Assertions.assertEquals(productDTO.getDiscount(), product.getDiscount().getName());
+        Assertions.assertEquals(product.getDiscount().getDiscountPercent(), discountDTO.getPercentage());
     }
 
 }

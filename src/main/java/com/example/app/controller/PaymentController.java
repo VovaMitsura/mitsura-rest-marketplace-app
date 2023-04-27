@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/pay")
 class PaymentController {
     private final PaymentProvider paymentProvider;
     private final OrderService orderService;
@@ -25,7 +25,7 @@ class PaymentController {
         this.orderService = orderService;
     }
 
-    @PostMapping("/pay")
+    @PostMapping()
     public ResponseEntity<PaymentResponseDTO> payForOrder(@RequestBody PaymentRequestDTO paymentRequest) {
 
         String userEmail = UserPrincipalUtil.extractUserEmail();

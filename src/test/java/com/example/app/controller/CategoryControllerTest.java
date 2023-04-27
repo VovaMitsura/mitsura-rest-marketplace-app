@@ -32,7 +32,7 @@ import org.springframework.web.context.WebApplicationContext;
 @SpringBootTest(classes = RestMarketPlaceAppApplication.class)
 class CategoryControllerTest {
 
-    private static final String BASE_URL = "/api/v1/category";
+    private static final String BASE_URL = "/api/v1/categories";
 
     @Autowired
     WebApplicationContext webAppContext;

@@ -44,7 +44,9 @@ public class OrderDetails {
 
     @Transient
     public int getTotalPrice() {
-        if (product != null) return product.getPrice() * quantity;
+        if (product != null) {
+            return product.getDiscount() == null ? product.getPrice() * quantity :
+                    product.getPrice() * quantity - product.getPrice() * quantity * product.getDiscount().getDiscountPercent();        }
         return 0;
     }
 
