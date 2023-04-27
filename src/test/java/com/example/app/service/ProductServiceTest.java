@@ -3,20 +3,14 @@ package com.example.app.service;
 import com.example.app.controller.dto.DiscountDTO;
 import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.exception.NotFoundException;
+import com.example.app.exception.ResourceConflictException;
 import com.example.app.model.Discount;
 import com.example.app.model.Product;
 import com.example.app.repository.DiscountRepository;
 import com.example.app.repository.ProductRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -24,6 +18,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = ProductService.class)
@@ -42,18 +43,22 @@ class ProductServiceTest {
     DiscountRepository discountRepository;
 
     ObjectMapper mapper = new ObjectMapper();
-
     private final int minPrice = 0;
     private final int maxPrice = 1000000;
-
     List<Product> products;
+    String sellerEmail;
 
-    @Test
-    void getProductWithOutCategoryShouldReturnAllValues() throws IOException {
-
+    @BeforeEach()
+    void setUp() throws Exception {
         Product[] productsArray = mapper.readValue(new File("src/test/resources/data/products.json"),
                 Product[].class);
         products = Arrays.asList(productsArray);
+        sellerEmail = "john@mail.com";
+
+    }
+
+    @Test
+    void getProductWithOutCategoryShouldReturnAllValues() throws IOException {
 
         Mockito.when(productRepository.findAllByPriceBetween(minPrice, maxPrice)).thenReturn(products);
 
@@ -80,10 +85,6 @@ class ProductServiceTest {
     @Test
     void getProductWithCategorySmartphoneShouldReturnThreeValue() throws IOException {
 
-        Product[] productsArray = mapper.readValue(new File("src/test/resources/data/smartphones.json"),
-                Product[].class);
-        products = Arrays.asList(productsArray);
-
         Mockito.when(
                         productRepository.findAllByCategoryNameAndPriceBetween("smartphone", minPrice, maxPrice))
                 .thenReturn(products);
@@ -109,9 +110,6 @@ class ProductServiceTest {
 
     @Test
     void getProductByIdShouldReturnOneValue() throws IOException {
-        Product[] productsArray = mapper.readValue(new File("src/test/resources/data/products.json"),
-                Product[].class);
-        products = Arrays.asList(productsArray);
 
         Product actualProduct = products.get(0);
 
@@ -143,11 +141,7 @@ class ProductServiceTest {
     @Test
     void addDiscountToProduct() throws Exception {
 
-        Product[] productsArray = mapper.readValue(new File("src/test/resources/data/products.json"),
-                Product[].class);
-        products = Arrays.asList(productsArray);
         Product product = products.get(0);
-        String sellerEmail = "john@mail.com";
         DiscountDTO discountDTO = new DiscountDTO("Happy New Year disc.", 30);
         Discount discountToAdd = new Discount(1L, discountDTO.getName(), discountDTO.getPercentage(), null);
 
@@ -165,5 +159,39 @@ class ProductServiceTest {
         Assertions.assertNotNull(response);
         Assertions.assertEquals(response.getDiscount().getName(), discountDTO.getName());
         Assertions.assertEquals(response.getDiscount().getDiscountPercent(), discountDTO.getPercentage());
+    }
+
+    @Test
+    void addAddExistDiscountToProductThrowException() throws Exception {
+        Product product = products.get(0);
+        DiscountDTO discountDTO = new DiscountDTO("Happy New Year disc.", 30);
+        Discount discount = new Discount(1L, discountDTO.getName(), discountDTO.getPercentage(), null);
+        product.setDiscount(discount);
+
+        Mockito.when(productRepository.findByIdAndSellerEmail(1L, sellerEmail))
+                .thenReturn(Optional.of(product));
+
+        ResourceConflictException exception = Assertions.assertThrows(ResourceConflictException.class, () -> {
+            productService.addDiscountToProduct(1L, sellerEmail, discountDTO);
+        });
+
+        Assertions.assertEquals(ApplicationExceptionHandler.DUPLICATE_ENTRY, exception.getErrorCode());
+        Assertions.assertEquals(exception.getMessage(), String.format("Discount with name [%s] for product [%s] already exists",
+                product.getName(), discountDTO.getName()));
+    }
+
+    @Test
+    void getProductOfSellerWhichHaveNoProductThrowException() {
+
+        Mockito.when(productRepository.findByIdAndSellerEmail(1L, sellerEmail))
+                .thenReturn(Optional.empty());
+
+        NotFoundException exception = Assertions.assertThrows(NotFoundException.class, () -> {
+            productService.getProductByIdAndSellerEmail(1L, sellerEmail);
+        });
+
+        Assertions.assertEquals(ApplicationExceptionHandler.PRODUCT_NOT_FOUND, exception.getErrorCode());
+        Assertions.assertEquals(exception.getMessage(),  String.format("User with email [%s] has no product with id [%d]",
+                sellerEmail, 1L));
     }
 }
