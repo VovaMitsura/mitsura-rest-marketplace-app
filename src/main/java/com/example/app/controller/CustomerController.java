@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/customers")
+@PreAuthorize("hasAuthority('CUSTOMER')")
 @Transactional
 public class CustomerController {
 
@@ -26,8 +27,8 @@ public class CustomerController {
     this.customerService = customerService;
   }
 
+  /*TODO map to customer or admin*/
   @GetMapping()
-  @PreAuthorize("hasAuthority('CUSTOMER')")
   public ResponseEntity<List<CustomerDTO>> getAllCustomers() {
     List<User> customers = customerService.getUsersByRole(Role.CUSTOMER);
     List<CustomerDTO> customerDTOS = customers.stream().map(CustomerDTO::new).toList();
@@ -36,7 +37,6 @@ public class CustomerController {
   }
 
   @GetMapping(path = "/{id}")
-  @PreAuthorize("hasAuthority('CUSTOMER')")
   public ResponseEntity<CustomerDTO> getUserById(@PathVariable("id") Long customerId) {
     User user = customerService.getUserByIdAndRole(customerId, Role.CUSTOMER);
     CustomerDTO customerDTO = new CustomerDTO(user);
