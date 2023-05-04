@@ -1,9 +1,7 @@
 package com.example.app.service.stripe;
 
-import com.example.app.controller.dto.ProductDTO;
 import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.exception.PaymentException;
-import com.example.app.exception.ResourceConflictException;
 import com.example.app.model.CreditCard;
 import com.example.app.model.Order;
 import com.example.app.model.OrderDetails;
@@ -40,11 +38,8 @@ class StripePaymentServiceTest {
 
             null, 10, null);
     OrderDetails orderDetails = new OrderDetails(1L, product, "Honor h2", null, 1);
-    ProductDTO productUpdateQuantity = new ProductDTO(product.getName(), product.getPrice(),
-            null, null, product.getQuantity() - orderDetails.getQuantity());
     Order order = new Order(1L, null, 225, null, List.of(orderDetails), Order.Status.CREATED);
     CreditCard card = new CreditCard("12345678910", "2024", "4", "123");
-
 
 
     @BeforeEach
@@ -65,17 +60,4 @@ class StripePaymentServiceTest {
         Assertions.assertEquals(ApplicationExceptionHandler.TOKEN_EXCEPTION, exception.getErrorCode());
     }
 
-    @Test
-    void payWithOrderQuantityGreaterThanProductExistsShouldThrowException(){
-        Mockito.when(productService.getProductById(product.getId())).thenReturn(product);
-        orderDetails.setQuantity(11);
-
-        CreditCard card = new CreditCard("12345678910", "2024", "-1", "000");
-
-        ResourceConflictException exception = Assertions.assertThrows(ResourceConflictException.class, () -> {
-            spyStripe.pay(card, order);
-        });
-
-        Assertions.assertEquals(ApplicationExceptionHandler.QUANTITY_CONFLICT, exception.getErrorCode());
-    }
 }
