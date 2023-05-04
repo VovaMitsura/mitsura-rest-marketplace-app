@@ -1,17 +1,14 @@
 package com.example.app.service;
 
-import com.example.app.controller.dto.CreateOrderDTO;
-import com.example.app.controller.dto.DeleteProductDTO;
-import com.example.app.controller.dto.UpdateProductDTO;
+import com.example.app.controller.dto.*;
 import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.exception.NotFoundException;
-import com.example.app.model.Order;
+import com.example.app.exception.ResourceConflictException;
+import com.example.app.model.*;
 import com.example.app.model.Order.Status;
-import com.example.app.model.OrderDetails;
-import com.example.app.model.Product;
-import com.example.app.model.User;
 import com.example.app.repository.OrderDetailsRepository;
 import com.example.app.repository.OrderRepository;
+import com.example.app.service.stripe.StripePaymentStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +25,7 @@ public class OrderService {
     private final ProductService productService;
     private final UserService userService;
     private final OrderDetailsRepository orderDetailsRepository;
+    private final PaymentProvider paymentService;
 
     public List<Order> getUserOrders(String userEmail) {
         List<Order> userOrders = orderRepository.findAllByCustomerEmail(userEmail);
@@ -120,5 +118,45 @@ public class OrderService {
         order.setTotalAmount(order.getTotalAmount());
 
         return orderRepository.save(order);
+    }
+
+    public PaymentStatus payForOrder(CreditCard card, Order order){
+        List<OrderDetails> orderDetails = order.getOrderDetails();
+
+        for (OrderDetails details : orderDetails) {
+            Product ordederProduct = details.getProduct();
+            Product productInMarket = productService.getProductById(ordederProduct.getId());
+
+            if (details.getQuantity() > productInMarket.getQuantity()) {
+                throw new ResourceConflictException(ApplicationExceptionHandler.QUANTITY_CONFLICT,
+                        String.format("There are not so quantity [%d] goods [%s] " + "in market",
+                                ordederProduct.getQuantity(), ordederProduct.getName()));
+            }
+        }
+
+        PaymentStatus paymentStatus = new StripePaymentStatus(paymentService.pay(card, order));
+
+        for (OrderDetails details : orderDetails) {
+            Product ordederProduct = details.getProduct();
+            Product productInMarket = productService.getProductById(ordederProduct.getId());
+
+            ProductDTO productUpdateQuantity = new ProductDTO();
+            productUpdateQuantity.setName(productInMarket.getName());
+            productUpdateQuantity.setPrice(productInMarket.getPrice());
+            if (productInMarket.getDiscount() == null) {
+                productUpdateQuantity.setDiscount(null);
+            } else
+                productUpdateQuantity.setDiscount(productInMarket.getDiscount().getName());
+            productUpdateQuantity.setCategory(productInMarket.getCategory().getName());
+            productUpdateQuantity.setQuantity(productInMarket.getQuantity() - details.getQuantity());
+
+
+            productService.update(productInMarket.getId(), productUpdateQuantity, productInMarket.getSeller().getEmail());
+        }
+
+        order.setStatus(Order.Status.BOUGHT);
+        orderRepository.save(order);
+
+        return paymentStatus;
     }
 }
