@@ -3,6 +3,7 @@ package com.example.app.controller;
 import com.example.app.RestMarketPlaceAppApplication;
 import com.example.app.controller.dto.PaymentRequestDTO;
 import com.example.app.controller.dto.StipePaymentResponseDTO;
+import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.model.CreditCard;
 import com.example.app.model.Order;
 import com.example.app.model.User;
@@ -31,6 +32,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.util.List;
 
 @ExtendWith(SpringExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -93,12 +96,39 @@ class PaymentControllerTest {
         JsonNode node = objectMapper.readTree(mvcResult.getResponse().getContentAsString());
         String responseMessage = node.get("message").asText();
 
-        Order userOrder = orderService.getUserOrderById(request.getOrderID(), user.getEmail());
+        List<Order> userOrders = orderService.getUserOrders(user.getEmail(), Order.Status.BOUGHT);
 
         Assertions.assertNotNull(responseMessage);
         Assertions.assertEquals("Payment is succeed", responseMessage);
-        Assertions.assertEquals(Order.Status.BOUGHT, userOrder.getStatus());
+        Assertions.assertEquals(Order.Status.BOUGHT, userOrders.get(0).getStatus());
     }
 
+    @Test
+    void payForOneOrderTwoTimesThrowException() throws Exception {
+        Charge charge = new Charge();
+        charge.setStatus("succeeded");
+        charge.setAmount(225L);
+        Mockito.doReturn(charge).when(paymentService).pay(Mockito.any(CreditCard.class), Mockito.any(Order.class));
 
+        this.mockMvc.perform(MockMvcRequestBuilders.post(URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.post(URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andDo(MockMvcResultHandlers.print())
+                .andReturn();
+
+        var response = objectMapper.readValue(mvcResult.getResponse().getContentAsString(),
+                ApplicationExceptionHandler.ErrorResponse.class);
+
+        Assertions.assertEquals(ApplicationExceptionHandler.ORDER_NOT_FOUND, response.getErrorCode());
+        Assertions.assertEquals(String.format("No order of user [%s] with id [%d]", user.getEmail(), request.getOrderID()),
+                response.getErrorMessage());
+    }
 }
