@@ -102,10 +102,10 @@ class OrderServiceTest {
 
     @Test
     void getUsersOrdersShouldReturnList() {
-        Mockito.when(orderRepository.findAllByCustomerEmail(user.getEmail()))
+        Mockito.when(orderRepository.findAllByCustomerEmailAndStatus(user.getEmail(), Order.Status.CREATED))
                 .thenReturn(List.of(order));
 
-        List<Order> orders = orderService.getUserOrders(user.getEmail());
+        List<Order> orders = orderService.getUserOrders(user.getEmail(), Order.Status.CREATED);
 
         Assertions.assertNotNull(orders);
         Assertions.assertEquals(List.of(order), orders);
@@ -113,11 +113,11 @@ class OrderServiceTest {
 
     @Test
     void getUserWithNoOrdersShouldThrowException() {
-        Mockito.when(orderRepository.findAllByCustomerEmail(user.getEmail()))
+        Mockito.when(orderRepository.findAllByCustomerEmailAndStatus(user.getEmail(), Order.Status.CREATED))
                 .thenReturn(Collections.emptyList());
 
         NotFoundException exception = Assertions.assertThrows(NotFoundException.class,
-                () -> orderService.getUserOrders(user.getEmail()));
+                () -> orderService.getUserOrders(user.getEmail(), Order.Status.CREATED));
 
         Assertions.assertEquals(ApplicationExceptionHandler.ORDER_NOT_FOUND, exception.getErrorCode());
         Assertions.assertEquals(String.format("No order of user [%s]", user.getEmail()), exception.getMessage());
@@ -125,7 +125,8 @@ class OrderServiceTest {
 
     @Test
     void getUserOrderByIdShouldReturnOneValue() {
-        Mockito.when(orderRepository.findByIdAndCustomerEmail(order.getId(), user.getEmail()))
+        Mockito.when(orderRepository.findByIdAndCustomerEmailAndStatus(order.getId(), user.getEmail(),
+                        Order.Status.CREATED))
                 .thenReturn(Optional.of(order));
 
         Order userOrder = orderService.getUserOrderById(order.getId(), user.getEmail());
@@ -140,7 +141,8 @@ class OrderServiceTest {
 
     @Test
     void getUserWithNoOrderShouldThrowException() {
-        Mockito.when(orderRepository.findByIdAndCustomerEmail(order.getId(), user.getEmail()))
+        Mockito.when(orderRepository.findByIdAndCustomerEmailAndStatus(order.getId(), user.getEmail(),
+                        Order.Status.CREATED))
                 .thenReturn(Optional.empty());
 
         NotFoundException exception = Assertions.assertThrows(NotFoundException.class,
@@ -165,7 +167,8 @@ class OrderServiceTest {
                 .thenReturn(user);
         Mockito.when(productService.getProductById(product.getId()))
                 .thenReturn(product);
-        Mockito.when(orderRepository.findByIdAndCustomerEmail(order.getId(), user.getEmail()))
+        Mockito.when(orderRepository.findByIdAndCustomerEmailAndStatus(order.getId(), user.getEmail(),
+                        Order.Status.CREATED))
                 .thenReturn(Optional.empty());
         Mockito.when(orderRepository.save(Mockito.any(Order.class)))
                 .thenReturn(order);
@@ -194,7 +197,8 @@ class OrderServiceTest {
                 productDTO.getQuantity() * product.getPrice(),
                 order.getDate(), List.of(orderDetails), order.getStatus());
 
-        Mockito.when(orderRepository.findByIdAndCustomerEmail(order.getId(), user.getEmail()))
+        Mockito.when(orderRepository.findByIdAndCustomerEmailAndStatus(order.getId(), user.getEmail(),
+                        Order.Status.CREATED))
                 .thenReturn(Optional.of(order));
         Mockito.when(orderRepository.save(updateOrder))
                 .thenReturn(updateOrder);
@@ -212,7 +216,8 @@ class OrderServiceTest {
                 .quantity(10)
                 .build();
 
-        Mockito.when(orderRepository.findByIdAndCustomerEmail(order.getId(), user.getEmail()))
+        Mockito.when(orderRepository.findByIdAndCustomerEmailAndStatus(order.getId(), user.getEmail(),
+                        Order.Status.CREATED))
                 .thenReturn(Optional.of(order));
 
         NotFoundException exception = Assertions.assertThrows(NotFoundException.class,

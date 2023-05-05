@@ -69,7 +69,8 @@ class OrderControllerTest {
     @Test
     void getAllCustomerOrdersShouldReturnOk() throws Exception {
 
-        List<Order> allByCustomerOrders = orderRepository.findAllByCustomerEmail(user.getEmail());
+        List<Order> allByCustomerOrders = orderRepository.findAllByCustomerEmailAndStatus(user.getEmail(),
+                Order.Status.CREATED);
         Order orderFromRepository = allByCustomerOrders.get(0);
 
         MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL)
@@ -104,7 +105,8 @@ class OrderControllerTest {
 
         response = mapper.readValue(mvcResult.getResponse().getContentAsString(), OrderCreationResponseDTO.class);
 
-        List<Order> allByCustomerOrders = orderRepository.findAllByCustomerEmail(user.getEmail());
+        List<Order> allByCustomerOrders = orderRepository.findAllByCustomerEmailAndStatus(user.getEmail(),
+                Order.Status.CREATED);
         OrderCreationResponseDTO createdOrder = OrderCreationResponseDTO
                 .builder()
                 .message("Order successfully created")
@@ -139,7 +141,8 @@ class OrderControllerTest {
     @Test
     void getUserOrderByIdShouldReturnOk() throws Exception {
 
-        Order order = orderRepository.findByIdAndCustomerEmail(1L, user.getEmail()).orElseThrow();
+        Order order = orderRepository.findByIdAndCustomerEmailAndStatus(1L, user.getEmail(),
+                Order.Status.CREATED).orElseThrow();
 
         this.mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL + "/1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -164,7 +167,8 @@ class OrderControllerTest {
 
         Order response = mapper.readValue(mvcResult.getResponse().getContentAsString(), Order.class);
 
-        Order updatedOrderFromRepository = orderRepository.findByIdAndCustomerEmail(1L, user.getEmail())
+        Order updatedOrderFromRepository = orderRepository.findByIdAndCustomerEmailAndStatus(1L, user.getEmail(),
+                        Order.Status.CREATED)
                 .orElseThrow();
 
         Assertions.assertEquals(response.getId(), updatedOrderFromRepository.getId());
@@ -195,7 +199,8 @@ class OrderControllerTest {
     @Test
     void deleteOrderShouldReturnStatusOk() throws Exception {
 
-        Order currentOrder = orderRepository.findByIdAndCustomerEmail(1L, user.getEmail()).orElseThrow();
+        Order currentOrder = orderRepository.findByIdAndCustomerEmailAndStatus(1L, user.getEmail(),
+                Order.Status.CREATED).orElseThrow();
 
         this.mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URL + "/1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -203,7 +208,8 @@ class OrderControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().string(mapper.writeValueAsString(currentOrder)));
 
-        Optional<Order> isAnyExists = orderRepository.findByIdAndCustomerEmail(1L, user.getEmail());
+        Optional<Order> isAnyExists = orderRepository.findByIdAndCustomerEmailAndStatus(1L, user.getEmail(),
+                Order.Status.CREATED);
 
         Assertions.assertTrue(isAnyExists.isEmpty());
     }

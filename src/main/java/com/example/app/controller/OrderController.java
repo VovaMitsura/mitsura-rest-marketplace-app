@@ -27,7 +27,7 @@ public class OrderController {
     @GetMapping()
     public ResponseEntity<List<Order>> getUserOrders() {
 
-        List<Order> userOrders = orderService.getUserOrders(UserPrincipalUtil.extractUserEmail());
+        List<Order> userOrders = orderService.getUserOrders(UserPrincipalUtil.extractUserEmail(), Order.Status.CREATED);
 
         return ResponseEntity.ok(userOrders);
     }

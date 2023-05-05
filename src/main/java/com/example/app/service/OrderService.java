@@ -27,8 +27,8 @@ public class OrderService {
     private final OrderDetailsRepository orderDetailsRepository;
     private final PaymentProvider paymentService;
 
-    public List<Order> getUserOrders(String userEmail) {
-        List<Order> userOrders = orderRepository.findAllByCustomerEmail(userEmail);
+    public List<Order> getUserOrders(String userEmail, Order.Status status) {
+        List<Order> userOrders = orderRepository.findAllByCustomerEmailAndStatus(userEmail, status);
 
         if (userOrders.isEmpty()) {
             throw new NotFoundException(ApplicationExceptionHandler.ORDER_NOT_FOUND,
@@ -39,7 +39,7 @@ public class OrderService {
     }
 
     public Order getUserOrderById(Long id, String customerEmail) {
-        return orderRepository.findByIdAndCustomerEmail(id, customerEmail).orElseThrow(() ->
+        return orderRepository.findByIdAndCustomerEmailAndStatus(id, customerEmail, Status.CREATED).orElseThrow(() ->
                 new NotFoundException(ApplicationExceptionHandler.ORDER_NOT_FOUND,
                         String.format("No order of user [%s] with id [%d]", customerEmail, id)));
     }
@@ -52,10 +52,10 @@ public class OrderService {
 
         Order order;
 
-        Optional<Order> optionalOrder = orderRepository.findByIdAndCustomerEmail(productToOrder.getOrderId(), userEmail);
+        Optional<Order> optionalOrder = orderRepository.findByIdAndCustomerEmailAndStatus(productToOrder.getOrderId(),
+                userEmail, Status.CREATED);
         order = optionalOrder.orElseGet(() -> Order.builder().
                 customer(customerByEmail)
-                .date(new Timestamp(new Date().getTime()))
                 .status(Status.CREATED)
                 .build());
 
@@ -155,6 +155,7 @@ public class OrderService {
         }
 
         order.setStatus(Order.Status.BOUGHT);
+        order.setDate(new Timestamp(new Date().getTime()));
         orderRepository.save(order);
 
         return paymentStatus;
