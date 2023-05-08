@@ -77,8 +77,18 @@ public class SellerController {
                                                     @Valid @RequestBody DiscountDTO req) {
         String userEmail = UserPrincipalUtil.extractUserEmail();
         Product product = productService.addDiscountToProduct(id, userEmail, req);
-        ProductDTO response = new ProductDTO(product.getName(), product.getPrice(),
-                product.getDiscount().getName(), product.getCategory().getName(), product.getQuantity());
+        ProductDTO response = ProductDTO.builder()
+                .name(product.getName())
+                .price(product.getPrice())
+                .discount(product.getDiscount().getName())
+                .category(product.getCategory().getName())
+                .quantity(product.getQuantity())
+                .build();
+
+        if(product.getBonus() != null){
+            response.setBonus(product.getBonus().getName());
+        }
+
         return ResponseEntity.ok(response);
     }
 }

@@ -5,10 +5,8 @@ import com.example.app.controller.dto.ProductDTO;
 import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.exception.NotFoundException;
 import com.example.app.exception.ResourceConflictException;
-import com.example.app.model.Category;
-import com.example.app.model.Discount;
-import com.example.app.model.Product;
-import com.example.app.model.User;
+import com.example.app.model.*;
+import com.example.app.repository.BonusRepository;
 import com.example.app.repository.DiscountRepository;
 import com.example.app.repository.ProductRepository;
 
@@ -26,14 +24,16 @@ public class ProductService {
     private final DiscountRepository discountRepository;
     private final CategoryService categoryService;
     private final DiscountService discountService;
+    private final BonusRepository bonusRepository;
 
     @Autowired
     public ProductService(ProductRepository productRepository, DiscountRepository discountRepository, CategoryService categoryService,
-                          DiscountService discountService) {
+                          DiscountService discountService, BonusRepository bonusRepository) {
         this.productRepository = productRepository;
         this.discountRepository = discountRepository;
         this.categoryService = categoryService;
         this.discountService = discountService;
+        this.bonusRepository = bonusRepository;
     }
 
     public Product createProduct(ProductDTO productDto, User seller) {
@@ -118,6 +118,10 @@ public class ProductService {
             Category updateCategory = categoryService.findCategoryByName(update.getCategory());
             product.setCategory(updateCategory);
         }
+        if (Objects.nonNull(update.getBonus())) {
+            Optional<Bonus> optBonus = bonusRepository.findByName(update.getBonus());
+            optBonus.ifPresent(product::setBonus);
+        }
 
         return productRepository.save(product);
     }
@@ -130,7 +134,7 @@ public class ProductService {
         return product;
     }
 
-    public Product getProductByIdAndSellerEmail(Long id, String email){
+    public Product getProductByIdAndSellerEmail(Long id, String email) {
         return productRepository.findByIdAndSellerEmail(id, email)
                 .orElseThrow(() -> new NotFoundException(ApplicationExceptionHandler.PRODUCT_NOT_FOUND,
                         String.format("User with email [%s] has no product with id [%d]", email, id)));
