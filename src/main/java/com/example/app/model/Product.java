@@ -50,6 +50,12 @@ public class Product {
   @JsonBackReference
   private User seller;
 
+  @ManyToOne
+  @JoinColumn(name = "bonus_id")
+  @JsonIgnoreProperties(value = {"products", "users"})
+  private Bonus bonus;
+
+
   private Integer quantity;
 
   @OneToMany(mappedBy = "product", fetch = FetchType.EAGER)

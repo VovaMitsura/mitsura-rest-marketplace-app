@@ -29,4 +29,8 @@ public class Bonus {
   @JsonIgnore
   private List<User> users;
 
+  @OneToMany(mappedBy = "bonus")
+  private List<Product> products;
+
+
 }
