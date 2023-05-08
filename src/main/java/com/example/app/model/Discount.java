@@ -25,7 +25,6 @@ public class Discount {
   private int discountPercent;
 
   @OneToMany(mappedBy = "discount")
-  //@JsonManagedReference(value = "product-discount")
   private List<Product> products;
 
 }
