@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -120,7 +121,7 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    public PaymentStatus payForOrder(CreditCard card, Order order){
+    public PaymentStatus payForOrder(CreditCard card, Order order) {
         List<OrderDetails> orderDetails = order.getOrderDetails();
 
         for (OrderDetails details : orderDetails) {
@@ -136,6 +137,8 @@ public class OrderService {
 
         PaymentStatus paymentStatus = new StripePaymentStatus(paymentService.pay(card, order));
 
+        List<Bonus> bonuses = new ArrayList<>();
+
         for (OrderDetails details : orderDetails) {
             Product ordederProduct = details.getProduct();
             Product productInMarket = productService.getProductById(ordederProduct.getId());
@@ -147,11 +150,19 @@ public class OrderService {
                 productUpdateQuantity.setDiscount(null);
             } else
                 productUpdateQuantity.setDiscount(productInMarket.getDiscount().getName());
+            if (productInMarket.getBonus() != null)
+                bonuses.add(productInMarket.getBonus());
             productUpdateQuantity.setCategory(productInMarket.getCategory().getName());
             productUpdateQuantity.setQuantity(productInMarket.getQuantity() - details.getQuantity());
 
 
             productService.update(productInMarket.getId(), productUpdateQuantity, productInMarket.getSeller().getEmail());
+        }
+
+        if (!bonuses.isEmpty()) {
+            User customer = userService.getUserByEmail(order.getCustomer().getEmail());
+            customer.setBonuses(bonuses);
+            userService.updateUser(customer);
         }
 
         order.setStatus(Order.Status.BOUGHT);
