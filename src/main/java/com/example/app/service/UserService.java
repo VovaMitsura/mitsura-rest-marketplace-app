@@ -53,7 +53,7 @@ public class UserService {
     User currentUser = getUserByEmail(update.getEmail());
 
     currentUser.setOrders(update.getOrders());
-    currentUser.setBonuses(update.getBonuses());
+    currentUser.setTotalBonusAmount(update.getTotalBonusAmount());
     currentUser.setOrders(update.getOrders());
     currentUser.setProducts(update.getProducts());
 

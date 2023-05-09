@@ -33,16 +33,11 @@ public class User {
   @Enumerated(EnumType.STRING)
   private Role role;
 
+  @Column(name = "bonuses_amount")
+  private int totalBonusAmount;
+
   @JsonIgnore
   private String password;
-
-  @ManyToMany(fetch = FetchType.EAGER)
-  @JoinTable(
-      name = "User_Bonus",
-      joinColumns = @JoinColumn(name = "user_id"),
-      inverseJoinColumns = @JoinColumn(name = "bonus_id")
-  )
-  private List<Bonus> bonuses;
 
   @OneToMany(mappedBy = "seller", fetch = FetchType.EAGER)
   @JsonManagedReference()
@@ -52,9 +47,7 @@ public class User {
   @JsonManagedReference
   private List<Order> orders;
 
-  public enum Role {
-    CUSTOMER, SELLER, ADMIN
+  public enum Role {CUSTOMER, SELLER, ADMIN
   }
-
 
 }
