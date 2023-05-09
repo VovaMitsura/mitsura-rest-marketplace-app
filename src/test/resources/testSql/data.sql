@@ -13,15 +13,6 @@ values ('action', now(), 200),
        ('prize', now(), 400),
        ('complete', now(), 150);
 
-insert into User_Bonus(user_id, bonus_id)
-values (1, 1),
-       (1, 2),
-       (1, 3),
-       (2, 2),
-       (2, 3),
-       (3, 1),
-       (3, 3);
-
 insert into category (name, description)
 values ('smartphone', 'smart gadgets for teenagers'),
        ('laptop', 'A laptop computer or notebook computer, also known as a laptop or notebook

@@ -1,6 +1,5 @@
 drop table if exists Order_details;
 drop table if exists Product;
-drop table if exists User_Bonus;
 drop table if exists Discount;
 drop table if exists Category;
 drop table if exists Bonus;
@@ -22,16 +21,6 @@ create table if not exists User
     email    varchar(50) unique not null,
     role     varchar(15)        not null,
     password varchar(100)       not null
-);
-
-create table if not exists User_Bonus
-(
-    user_id  int,
-    bonus_id int,
-    foreign key (user_id) references User (id)
-        on delete cascade
-        on update cascade,
-    primary key (user_id, bonus_id)
 );
 
 create table if not exists Discount
