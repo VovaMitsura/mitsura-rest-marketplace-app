@@ -34,7 +34,7 @@ public class User {
   private Role role;
 
   @Column(name = "bonuses_amount")
-  private int totalBonusAmount;
+  private Integer totalBonusAmount;
 
   @JsonIgnore
   private String password;
