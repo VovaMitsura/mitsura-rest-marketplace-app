@@ -20,7 +20,7 @@ create table if not exists User
     fullname       varchar(50)        not null,
     email          varchar(50) unique not null,
     role           varchar(15)        not null,
-    bonuses_amount int,
+    bonuses_amount int default 0,
     password       varchar(100)       not null
 );
 
@@ -44,7 +44,7 @@ create table if not exists Product
     id             int primary key auto_increment,
     name           varchar(30),
     price          int check (price > 0),
-    price_in_bonus int check (price_in_bonus > 0),
+    price_in_bonus int default 0,
     discount_id    int,
     category_id    int,
     seller_id      int,
