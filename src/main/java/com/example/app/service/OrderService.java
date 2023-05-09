@@ -122,6 +122,28 @@ public class OrderService {
     }
 
     public PaymentStatus payForOrder(CreditCard card, Order order) {
+
+        ordersAmountNotGreaterThanProducts(order);
+
+        PaymentStatus paymentStatus = new StripePaymentStatus(paymentService.pay(card, order));
+
+        List<Bonus> bonuses = updateProductsInOrder(order);
+
+        if (!bonuses.isEmpty()) {
+            User customer = userService.getUserByEmail(order.getCustomer().getEmail());
+            int sum = bonuses.stream().mapToInt(Bonus::getAmount).sum();
+            customer.setTotalBonusAmount(customer.getTotalBonusAmount() + sum);
+            userService.updateUser(customer);
+        }
+
+        order.setStatus(Order.Status.BOUGHT);
+        order.setDate(new Timestamp(new Date().getTime()));
+        orderRepository.save(order);
+
+        return paymentStatus;
+    }
+
+    private void ordersAmountNotGreaterThanProducts(Order order) {
         List<OrderDetails> orderDetails = order.getOrderDetails();
 
         for (OrderDetails details : orderDetails) {
@@ -134,9 +156,10 @@ public class OrderService {
                                 ordederProduct.getQuantity(), ordederProduct.getName()));
             }
         }
+    }
 
-        PaymentStatus paymentStatus = new StripePaymentStatus(paymentService.pay(card, order));
-
+    private List<Bonus> updateProductsInOrder(Order order) {
+        List<OrderDetails> orderDetails = order.getOrderDetails();
         List<Bonus> bonuses = new ArrayList<>();
 
         for (OrderDetails details : orderDetails) {
@@ -159,16 +182,6 @@ public class OrderService {
             productService.update(productInMarket.getId(), productUpdateQuantity, productInMarket.getSeller().getEmail());
         }
 
-        if (!bonuses.isEmpty()) {
-            User customer = userService.getUserByEmail(order.getCustomer().getEmail());
-            customer.setBonuses(bonuses);
-            userService.updateUser(customer);
-        }
-
-        order.setStatus(Order.Status.BOUGHT);
-        order.setDate(new Timestamp(new Date().getTime()));
-        orderRepository.save(order);
-
-        return paymentStatus;
+        return bonuses;
     }
 }
