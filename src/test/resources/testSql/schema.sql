@@ -16,11 +16,12 @@ create table if not exists Bonus
 
 create table if not exists User
 (
-    id       int primary key auto_increment,
-    fullname varchar(50)        not null,
-    email    varchar(50) unique not null,
-    role     varchar(15)        not null,
-    password varchar(100)       not null
+    id             int primary key auto_increment,
+    fullname       varchar(50)        not null,
+    email          varchar(50) unique not null,
+    role           varchar(15)        not null,
+    bonuses_amount int,
+    password       varchar(100)       not null
 );
 
 create table if not exists Discount
@@ -40,15 +41,15 @@ create table if not exists Category
 
 create table if not exists Product
 (
-    id          int primary key auto_increment,
-    name        varchar(30),
-    price       int check (price > 0),
+    id             int primary key auto_increment,
+    name           varchar(30),
+    price          int check (price > 0),
     price_in_bonus int check (price_in_bonus > 0),
-    discount_id int,
-    category_id int,
-    seller_id   int,
-    bonus_id    int,
-    quantity    int check (quantity > 0),
+    discount_id    int,
+    category_id    int,
+    seller_id      int,
+    bonus_id       int,
+    quantity       int check (quantity > 0),
     foreign key (discount_id) references Discount (id)
         on delete cascade
         on update cascade,
