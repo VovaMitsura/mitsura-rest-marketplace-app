@@ -46,16 +46,15 @@ class OrderServiceTest {
     Product product;
     OrderDetails orderDetails;
     Order order;
-    User user = new User(1L, "John", "John@mail.com", User.Role.SELLER, null,
+    User user = new User(1L, "John", "John@mail.com", User.Role.SELLER, 0,
             null, null, null);
     CreditCard card = new CreditCard("12345678910", "2024", "4", "123");
 
     @BeforeEach()
     void setUp() {
-        product = new Product(1L, "Honor h2", 225, null,
+        product = new Product(1L, "Honor h2", 225, 1200, null,
                 new Category(1L, "laptop", "gadget", null),
-                user,
-                10, null);
+                user, null, 10, null);
         orderDetails = new OrderDetails(1L, product, "Honor h2", null, 1);
         order = new Order(1L, null, 225, null, List.of(orderDetails), Order.Status.CREATED);
     }
@@ -72,7 +71,7 @@ class OrderServiceTest {
         Mockito.when(paymentService.pay(card, order))
                 .thenReturn(charge);
         Mockito.when(productService.update(product.getId(), new ProductDTO(product.getName(), product.getPrice(),
-                        null, product.getCategory().getName(),
+                        product.getPriceInBonus(),  null, product.getCategory().getName(), null,
                         product.getQuantity() - orderDetails.getQuantity()), null))
                 .thenReturn(product);
         Mockito.when(orderRepository.save(Mockito.any(Order.class)))

@@ -85,6 +85,7 @@ class SellerControllerTest {
     void postValidProductShouldReturnCreated() throws Exception {
 
         postProduct.setCategory("smartphone");
+        postProduct.setPriceInBonus(1200);
 
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(SELLER_URL + "/products")
                         .content(objectMapper.writeValueAsString(postProduct))
@@ -96,14 +97,15 @@ class SellerControllerTest {
         JsonNode node = objectMapper.readTree(result.getResponse().getContentAsString());
 
         Product response = new Product(node.get("id").asLong(), node.get("name").asText(),
-                node.get("price").asInt(), null, null, null,
-                node.get("quantity").asInt(), null);
+                node.get("price").asInt(), node.get("priceInBonus").asInt(), null, null,
+                null, null, node.get("quantity").asInt(), null);
 
         Assertions.assertEquals(responseProduct.getId(), response.getId());
         Assertions.assertEquals(responseProduct.getName(), response.getName());
         Assertions.assertEquals(responseProduct.getCategory(), response.getCategory());
         Assertions.assertEquals(responseProduct.getPrice(), response.getPrice());
         Assertions.assertEquals(responseProduct.getCategory(), response.getCategory());
+        Assertions.assertEquals(responseProduct.getPriceInBonus(), response.getPriceInBonus());
     }
 
     @Test
@@ -111,6 +113,7 @@ class SellerControllerTest {
     void postProductWithInvalidDiscountShouldReturnNotFound() throws Exception {
         postProduct.setDiscount("lol");
         postProduct.setCategory("smartphone");
+        postProduct.setPriceInBonus(1200);
         ErrorResponse response = new ErrorResponse(ApplicationExceptionHandler.DISCOUNT_NOT_FOUND,
                 String.format("discount with name: '%s' not found", postProduct.getDiscount()));
 
@@ -126,6 +129,7 @@ class SellerControllerTest {
     @Order(3)
     void postProductWithInvalidCategoryShouldReturnNotFound() throws Exception {
         postProduct.setCategory("lol");
+        postProduct.setPriceInBonus(1200);
         ErrorResponse response = new ErrorResponse(ApplicationExceptionHandler.CATEGORY_NOT_FOUND,
                 String.format("category with name: %s not found", postProduct.getCategory()));
 
@@ -161,7 +165,7 @@ class SellerControllerTest {
 
     @Test
     void updateProductShouldReturnAccepted() throws Exception {
-        ProductDTO request = new ProductDTO("Samsung m53", 16000, null, "smartphone", 5);
+        ProductDTO request = new ProductDTO("Samsung m53", 16000, 1500, null, "smartphone", null, 5);
 
         MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.put(SELLER_URL + "/products/1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -180,7 +184,8 @@ class SellerControllerTest {
 
     @Test
     void updateNonExistingProductShouldReturnException() throws Exception {
-        ProductDTO request = new ProductDTO("Samsung m53", 16000, null, "smartphone", 5);
+        ProductDTO request = new ProductDTO("Samsung m53", 16000, 1200, null, "smartphone",
+                null, 5);
 
         ErrorResponse errorResponse = new ErrorResponse(ApplicationExceptionHandler.PRODUCT_NOT_FOUND,
                 String.format("User with email [%s] has no product with id [%d]", "tanya@mail.com", 10L));
