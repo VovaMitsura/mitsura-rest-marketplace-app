@@ -13,25 +13,16 @@ values ('action', now(), 200),
        ('prize', now(), 400),
        ('complete', now(), 150);
 
-insert into User_Bonus(user_id, bonus_id)
-values (1, 1),
-       (1, 2),
-       (1, 3),
-       (2, 2),
-       (2, 3),
-       (3, 1),
-       (3, 3);
-
 insert into category (name, description)
 values ('smartphone', 'smart gadgets for teenagers'),
        ('laptop', 'A laptop computer or notebook computer, also known as a laptop or notebook
 for short, is a small, portable personal computer (PC).');
 
-insert into product (name, price, discount_id, category_id, seller_id, quantity)
-values ('Samsung m53', 320, null, 1, 5, 15),
-       ('Samsung a54', 370, null, 1, 5, 20),
-       ('Honor h2', 225, null, 1, 5, 30),
-       ('Asus vivoBook', 380, null, 2, 5, 10);
+insert into product (name, price, discount_id, category_id, seller_id, bonus_id, quantity)
+values ('Samsung m53', 320, null, 1, 5, 1, 15),
+       ('Samsung a54', 370, null, 1, 5, 2, 20),
+       ('Honor h2', 225, null, 1, 5, 1, 30),
+       ('Asus vivoBook', 2200, null, 2, 5, 3, 10);
 
 insert into my_order (customer_id, total_amount, date, status)
 values (1, 225, null, 'CREATED');

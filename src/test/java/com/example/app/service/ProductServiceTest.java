@@ -6,6 +6,7 @@ import com.example.app.exception.NotFoundException;
 import com.example.app.exception.ResourceConflictException;
 import com.example.app.model.Discount;
 import com.example.app.model.Product;
+import com.example.app.repository.BonusRepository;
 import com.example.app.repository.DiscountRepository;
 import com.example.app.repository.ProductRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,6 +42,8 @@ class ProductServiceTest {
     DiscountService discountService;
     @MockBean
     DiscountRepository discountRepository;
+    @MockBean
+    BonusRepository bonusRepository;
 
     ObjectMapper mapper = new ObjectMapper();
     private final int minPrice = 0;
@@ -191,7 +194,7 @@ class ProductServiceTest {
         });
 
         Assertions.assertEquals(ApplicationExceptionHandler.PRODUCT_NOT_FOUND, exception.getErrorCode());
-        Assertions.assertEquals(exception.getMessage(),  String.format("User with email [%s] has no product with id [%d]",
+        Assertions.assertEquals(exception.getMessage(), String.format("User with email [%s] has no product with id [%d]",
                 sellerEmail, 1L));
     }
 }

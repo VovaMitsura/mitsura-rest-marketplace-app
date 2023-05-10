@@ -3,12 +3,13 @@ package com.example.app.controller.dto;
 import com.example.app.model.Product;
 import com.example.app.model.User;
 import com.example.app.model.User.Role;
-import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
-@Getter
-@Setter
+import java.util.List;
+
+@Data
+@AllArgsConstructor
 public class SellerDTO {
 
   private Long id;

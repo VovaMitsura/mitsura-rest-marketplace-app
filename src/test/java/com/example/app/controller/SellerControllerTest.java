@@ -3,17 +3,19 @@ package com.example.app.controller;
 import com.example.app.RestMarketPlaceAppApplication;
 import com.example.app.controller.dto.DiscountDTO;
 import com.example.app.controller.dto.ProductDTO;
+import com.example.app.controller.dto.SellerDTO;
 import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.exception.ApplicationExceptionHandler.ErrorResponse;
+import com.example.app.model.Bonus;
 import com.example.app.model.Product;
 import com.example.app.model.User;
+import com.example.app.repository.BonusRepository;
 import com.example.app.repository.ProductRepository;
 import com.example.app.repository.UserRepository;
 import com.example.app.security.JwtAuthenticationFilter;
 import com.example.app.utils.TokenUtil;
 import com.example.app.utils.factory.SellerFactory;
 import com.example.app.utils.factory.UserFactory;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -31,6 +33,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.util.List;
 
 @ExtendWith(SpringExtension.class)
 @TestMethodOrder(OrderAnnotation.class)
@@ -50,11 +54,12 @@ class SellerControllerTest {
     private ProductRepository productRepository;
     @Autowired
     private JwtAuthenticationFilter authenticationFilter;
+    @Autowired
+    private BonusRepository bonusRepository;
 
     private MockMvc mockMvc;
     private String jwtToken;
     private ProductDTO postProduct;
-    private Product responseProduct;
 
     @BeforeEach
     void setUp() {
@@ -64,15 +69,10 @@ class SellerControllerTest {
 
         postProduct = new ProductDTO();
         postProduct.setName("Samsung a71");
+        postProduct.setBonus("action");
         postProduct.setDiscount(null);
         postProduct.setPrice(18000);
         postProduct.setQuantity(40);
-
-        responseProduct = new Product();
-        responseProduct.setId(5L);
-        responseProduct.setName(postProduct.getName());
-        responseProduct.setPrice(postProduct.getPrice());
-        responseProduct.setQuantity(postProduct.getQuantity());
 
         UserFactory factory = new SellerFactory();
         User user = factory.createUser();
@@ -93,17 +93,18 @@ class SellerControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andReturn();
 
-        JsonNode node = objectMapper.readTree(result.getResponse().getContentAsString());
+        Product response = objectMapper.readValue(result.getResponse().getContentAsString(), Product.class);
+        Bonus bonus = bonusRepository.findByName(postProduct.getBonus()).get();
 
-        Product response = new Product(node.get("id").asLong(), node.get("name").asText(),
-                node.get("price").asInt(), null, null, null,
-                node.get("quantity").asInt(), null);
-
-        Assertions.assertEquals(responseProduct.getId(), response.getId());
-        Assertions.assertEquals(responseProduct.getName(), response.getName());
-        Assertions.assertEquals(responseProduct.getCategory(), response.getCategory());
-        Assertions.assertEquals(responseProduct.getPrice(), response.getPrice());
-        Assertions.assertEquals(responseProduct.getCategory(), response.getCategory());
+        Assertions.assertNotNull(response.getId());
+        Assertions.assertEquals(postProduct.getName(), response.getName());
+        Assertions.assertEquals(postProduct.getPrice(), response.getPrice());
+        Assertions.assertEquals(postProduct.getQuantity(), response.getQuantity());
+        Assertions.assertEquals(postProduct.getBonus(), response.getBonus().getName());
+        Assertions.assertEquals(postProduct.getCategory(), response.getCategory().getName());
+        Assertions.assertEquals(bonus.getId(), response.getBonus().getId());
+        Assertions.assertEquals(bonus.getName(), response.getBonus().getName());
+        Assertions.assertEquals(bonus.getAmount(), response.getBonus().getAmount());
     }
 
     @Test
@@ -129,11 +130,11 @@ class SellerControllerTest {
         ErrorResponse response = new ErrorResponse(ApplicationExceptionHandler.CATEGORY_NOT_FOUND,
                 String.format("category with name: %s not found", postProduct.getCategory()));
 
-        mockMvc.perform(
-                        MockMvcRequestBuilders.post(SELLER_URL + "/products").contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(postProduct))
-                                .accept(MediaType.APPLICATION_JSON)
-                                .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
+        mockMvc.perform(MockMvcRequestBuilders.post(SELLER_URL + "/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(postProduct))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
                 .andExpect(MockMvcResultMatchers.status().isNotFound()).andExpect(
                         MockMvcResultMatchers.content().string(objectMapper.writeValueAsString(response)));
     }
@@ -141,10 +142,20 @@ class SellerControllerTest {
     @Test
     @Order(4)
     void getAllCustomersShouldReturnOneValue() throws Exception {
-        this.mockMvc.perform(MockMvcRequestBuilders.get(SELLER_URL)
+        MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.get(SELLER_URL)
                         .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andDo(MockMvcResultHandlers.print());
+                .andReturn();
+
+        List<SellerDTO> response = List.of(
+                objectMapper.readValue(mvcResult.getResponse().getContentAsString(), SellerDTO[].class));
+        List<SellerDTO> sellers = userRepository.getUsersByRole(User.Role.SELLER).stream().map(SellerDTO::new).toList();
+
+        Assertions.assertEquals(sellers.get(0).getId(), response.get(0).getId());
+        Assertions.assertEquals(sellers.get(0).getRole(), response.get(0).getRole());
+        Assertions.assertEquals(sellers.get(0).getFullName(), response.get(0).getFullName());
+        Assertions.assertEquals(sellers.get(0).getEmail(), response.get(0).getEmail());
+        Assertions.assertEquals(sellers.get(0).getProducts().size(), response.get(0).getProducts().size());
     }
 
     @Test
@@ -161,7 +172,7 @@ class SellerControllerTest {
 
     @Test
     void updateProductShouldReturnAccepted() throws Exception {
-        ProductDTO request = new ProductDTO("Samsung m53", 16000, null, "smartphone", 5);
+        ProductDTO request = new ProductDTO("Samsung m53", 16000, null, "smartphone", null, 5);
 
         MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.put(SELLER_URL + "/products/1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -180,7 +191,8 @@ class SellerControllerTest {
 
     @Test
     void updateNonExistingProductShouldReturnException() throws Exception {
-        ProductDTO request = new ProductDTO("Samsung m53", 16000, null, "smartphone", 5);
+        ProductDTO request = new ProductDTO("Samsung m53", 16000, null, "smartphone",
+                null, 5);
 
         ErrorResponse errorResponse = new ErrorResponse(ApplicationExceptionHandler.PRODUCT_NOT_FOUND,
                 String.format("User with email [%s] has no product with id [%d]", "tanya@mail.com", 10L));

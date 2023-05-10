@@ -20,6 +20,7 @@ public class ProductDTO {
   private String discount;
   @NotBlank
   private String category;
+  private String bonus;
   @Min(1)
   private int quantity;
 }

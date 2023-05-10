@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -120,7 +121,29 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    public PaymentStatus payForOrder(CreditCard card, Order order){
+    public PaymentStatus payForOrder(CreditCard card, Order order) {
+
+        ordersAmountNotGreaterThanProducts(order);
+
+        PaymentStatus paymentStatus = new StripePaymentStatus(paymentService.pay(card, order));
+
+        List<Bonus> bonuses = updateProductsInOrder(order);
+
+        if (!bonuses.isEmpty()) {
+            User customer = userService.getUserByEmail(order.getCustomer().getEmail());
+            int sum = bonuses.stream().mapToInt(Bonus::getAmount).sum();
+            customer.setTotalBonusAmount(customer.getTotalBonusAmount() + sum);
+            userService.updateUser(customer);
+        }
+
+        order.setStatus(Order.Status.BOUGHT);
+        order.setDate(new Timestamp(new Date().getTime()));
+        orderRepository.save(order);
+
+        return paymentStatus;
+    }
+
+    private void ordersAmountNotGreaterThanProducts(Order order) {
         List<OrderDetails> orderDetails = order.getOrderDetails();
 
         for (OrderDetails details : orderDetails) {
@@ -133,8 +156,11 @@ public class OrderService {
                                 ordederProduct.getQuantity(), ordederProduct.getName()));
             }
         }
+    }
 
-        PaymentStatus paymentStatus = new StripePaymentStatus(paymentService.pay(card, order));
+    private List<Bonus> updateProductsInOrder(Order order) {
+        List<OrderDetails> orderDetails = order.getOrderDetails();
+        List<Bonus> bonuses = new ArrayList<>();
 
         for (OrderDetails details : orderDetails) {
             Product ordederProduct = details.getProduct();
@@ -147,6 +173,8 @@ public class OrderService {
                 productUpdateQuantity.setDiscount(null);
             } else
                 productUpdateQuantity.setDiscount(productInMarket.getDiscount().getName());
+            if (productInMarket.getBonus() != null)
+                bonuses.add(productInMarket.getBonus());
             productUpdateQuantity.setCategory(productInMarket.getCategory().getName());
             productUpdateQuantity.setQuantity(productInMarket.getQuantity() - details.getQuantity());
 
@@ -154,10 +182,6 @@ public class OrderService {
             productService.update(productInMarket.getId(), productUpdateQuantity, productInMarket.getSeller().getEmail());
         }
 
-        order.setStatus(Order.Status.BOUGHT);
-        order.setDate(new Timestamp(new Date().getTime()));
-        orderRepository.save(order);
-
-        return paymentStatus;
+        return bonuses;
     }
 }

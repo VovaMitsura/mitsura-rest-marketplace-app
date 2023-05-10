@@ -5,7 +5,6 @@ import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor(force = true)
 public class AuthenticationRequest {

@@ -77,10 +77,6 @@ class CustomerControllerTest {
         Assertions.assertEquals(1L, response.getId());
         Assertions.assertEquals("John Smith", response.getFullName());
         Assertions.assertEquals(User.Role.CUSTOMER, response.getRole());
-        Assertions.assertEquals(3, response.getBonuses().size());
-        Assertions.assertEquals(1L, response.getBonuses().get(0).getId());
-        Assertions.assertEquals("action", response.getBonuses().get(0).getName());
-        Assertions.assertEquals(200, response.getBonuses().get(0).getAmount());
         Assertions.assertEquals(1, response.getOrders().size());
     }
 

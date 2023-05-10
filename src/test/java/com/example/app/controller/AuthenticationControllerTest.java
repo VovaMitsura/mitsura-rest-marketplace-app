@@ -2,6 +2,7 @@ package com.example.app.controller;
 
 import com.example.app.RestMarketPlaceAppApplication;
 import com.example.app.controller.dto.AuthenticationRequest;
+import com.example.app.controller.dto.AuthenticationResponse;
 import com.example.app.controller.dto.RegisterRequest;
 import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.exception.ApplicationExceptionHandler.ErrorResponse;
@@ -70,29 +71,53 @@ class AuthenticationControllerTest {
 
     @Test
     void registerSameUserAccountTwoTimeShouldThrowException() throws Exception {
-        this.mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/register")
+        MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(registerRequest)))
-                .andExpect(MockMvcResultMatchers.status().isCreated());
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andReturn();
 
-        this.mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/register")
+        AuthenticationResponse registerResponse = mapper.readValue(mvcResult.getResponse().getContentAsString(),
+                AuthenticationResponse.class);
+
+
+        MvcResult mvcResult1 = this.mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(registerRequest)))
-                .andExpect(MockMvcResultMatchers.status().isConflict());
+                .andExpect(MockMvcResultMatchers.status().isConflict())
+                .andReturn();
+
+        ErrorResponse errorResponse = mapper.readValue(mvcResult1.getResponse().getContentAsString(),
+                ErrorResponse.class);
+
+        Assertions.assertNotNull(registerResponse.getToken());
+        Assertions.assertEquals(ApplicationExceptionHandler.DUPLICATE_ENTRY, errorResponse.getErrorCode());
     }
 
 
     @Test
     void authenticateExistUserShouldReturnStatusOk() throws Exception {
-        this.mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/register")
+
+        MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(registerRequest)))
-                .andExpect(MockMvcResultMatchers.status().isCreated());
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andReturn();
 
-        this.mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/authenticate")
+        AuthenticationResponse responseRegistering = mapper.readValue(mvcResult.getResponse().getContentAsString(),
+                AuthenticationResponse.class);
+
+        MvcResult mvcResult1 = this.mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/authenticate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(authenticationRequest)))
-                .andExpect(MockMvcResultMatchers.status().isOk());
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        AuthenticationResponse responseAuthentication = mapper.readValue(mvcResult1.getResponse().getContentAsString(),
+                AuthenticationResponse.class);
+
+        Assertions.assertNotNull(responseAuthentication);
+        Assertions.assertNotNull(responseRegistering);
     }
 
     @Test

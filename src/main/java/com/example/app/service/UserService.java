@@ -49,4 +49,15 @@ public class UserService {
         String.format("User with email [%s] not found", email)));
   }
 
+  public User updateUser(User update){
+    User currentUser = getUserByEmail(update.getEmail());
+
+    currentUser.setOrders(update.getOrders());
+    currentUser.setTotalBonusAmount(update.getTotalBonusAmount());
+    currentUser.setOrders(update.getOrders());
+    currentUser.setProducts(update.getProducts());
+
+    return userRepository.save(currentUser);
+  }
+
 }

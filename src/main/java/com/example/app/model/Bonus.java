@@ -1,6 +1,5 @@
 package com.example.app.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,8 +24,7 @@ public class Bonus {
 
   private int amount;
 
-  @ManyToMany(mappedBy = "bonuses")
-  @JsonIgnore
-  private List<User> users;
+  @OneToMany(mappedBy = "bonus")
+  private List<Product> products;
 
 }

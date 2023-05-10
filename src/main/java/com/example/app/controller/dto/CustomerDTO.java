@@ -1,6 +1,5 @@
 package com.example.app.controller.dto;
 
-import com.example.app.model.Bonus;
 import com.example.app.model.Order;
 import com.example.app.model.User;
 import com.example.app.model.User.Role;
@@ -17,7 +16,7 @@ public class CustomerDTO {
   private String fullName;
   private String email;
   private Role role;
-  private List<Bonus> bonuses;
+  private int totalBonusAmount;
   private List<Order> orders;
 
   public CustomerDTO(User customer) {
@@ -25,7 +24,7 @@ public class CustomerDTO {
     this.fullName = customer.getFullName();
     this.email = customer.getEmail();
     this.role = customer.getRole();
-    this.bonuses = customer.getBonuses();
+    this.totalBonusAmount = customer.getTotalBonusAmount();
     this.orders = customer.getOrders();
   }
 }
