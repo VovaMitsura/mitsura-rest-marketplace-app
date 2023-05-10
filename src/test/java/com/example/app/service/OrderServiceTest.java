@@ -52,7 +52,7 @@ class OrderServiceTest {
 
     @BeforeEach()
     void setUp() {
-        product = new Product(1L, "Honor h2", 225, 1200, null,
+        product = new Product(1L, "Honor h2", 225, null,
                 new Category(1L, "laptop", "gadget", null),
                 user, null, 10, null);
         orderDetails = new OrderDetails(1L, product, "Honor h2", null, 1);
@@ -71,7 +71,7 @@ class OrderServiceTest {
         Mockito.when(paymentService.pay(card, order))
                 .thenReturn(charge);
         Mockito.when(productService.update(product.getId(), new ProductDTO(product.getName(), product.getPrice(),
-                        product.getPriceInBonus(),  null, product.getCategory().getName(), null,
+                        null, product.getCategory().getName(), null,
                         product.getQuantity() - orderDetails.getQuantity()), null))
                 .thenReturn(product);
         Mockito.when(orderRepository.save(Mockito.any(Order.class)))

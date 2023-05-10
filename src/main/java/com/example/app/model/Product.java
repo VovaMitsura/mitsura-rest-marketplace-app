@@ -27,8 +27,6 @@ public class Product {
   private String name;
 
   private int price;
-  @Column(name = "price_in_bonus")
-  private int priceInBonus;
 
   @ManyToOne
   @JoinColumn(name = "discount_id")

@@ -34,7 +34,7 @@ class StripePaymentServiceTest {
 
     StripePaymentService spyStripe;
 
-    Product product = new Product(1L, "Honor h2", 225, 1200, null, null,
+    Product product = new Product(1L, "Honor h2", 225, null, null,
             null, null, 10, null);
     OrderDetails orderDetails = new OrderDetails(1L, product, "Honor h2", null, 1);
     Order order = new Order(1L, null, 225, null, List.of(orderDetails), Order.Status.CREATED);
