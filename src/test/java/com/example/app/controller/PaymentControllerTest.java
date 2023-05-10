@@ -2,7 +2,6 @@ package com.example.app.controller;
 
 import com.example.app.RestMarketPlaceAppApplication;
 import com.example.app.controller.dto.PaymentRequestDTO;
-import com.example.app.controller.dto.StipePaymentResponseDTO;
 import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.model.Order;
 import com.example.app.model.*;
@@ -65,7 +64,6 @@ class PaymentControllerTest {
     private MockMvc mockMvc;
     private String jwtToken;
     private PaymentRequestDTO request;
-    private StipePaymentResponseDTO response;
     private User user;
 
     @BeforeEach
