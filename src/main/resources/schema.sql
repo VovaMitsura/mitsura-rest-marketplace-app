@@ -44,7 +44,6 @@ create table if not exists Product
     id             int primary key auto_increment,
     name           varchar(30),
     price          int check (price > 0),
-    price_in_bonus int default 0,
     discount_id    int,
     category_id    int,
     seller_id      int,
