@@ -4,11 +4,12 @@ import com.example.app.RestMarketPlaceAppApplication;
 import com.example.app.controller.dto.PaymentRequestDTO;
 import com.example.app.controller.dto.StipePaymentResponseDTO;
 import com.example.app.exception.ApplicationExceptionHandler;
-import com.example.app.model.CreditCard;
 import com.example.app.model.Order;
-import com.example.app.model.User;
+import com.example.app.model.*;
 import com.example.app.security.JwtAuthenticationFilter;
 import com.example.app.service.OrderService;
+import com.example.app.service.ProductService;
+import com.example.app.service.UserService;
 import com.example.app.service.stripe.StripePaymentService;
 import com.example.app.utils.TokenUtil;
 import com.example.app.utils.factory.CustomerFactory;
@@ -33,6 +34,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @ExtendWith(SpringExtension.class)
@@ -52,6 +54,10 @@ class PaymentControllerTest {
     private JwtAuthenticationFilter authenticationFilter;
     @Autowired
     private OrderService orderService;
+    @Autowired
+    UserService userService;
+    @Autowired
+    ProductService productService;
 
     @MockBean
     StripePaymentService paymentService;
@@ -98,9 +104,23 @@ class PaymentControllerTest {
 
         List<Order> userOrders = orderService.getUserOrders(user.getEmail(), Order.Status.BOUGHT);
 
+        List<Bonus> bonuses = new ArrayList<>();
+
+        for (OrderDetails details : userOrders.get(0).getOrderDetails()) {
+            Product ordederProduct = details.getProduct();
+            Product productInMarket = productService.getProductById(ordederProduct.getId());
+
+            if (productInMarket.getBonus() != null)
+                bonuses.add(productInMarket.getBonus());
+        }
+
+        int sumOfBonuses = bonuses.stream().mapToInt(Bonus::getAmount).sum();
+        User customer = userService.getUserByEmail(user.getEmail());
+
         Assertions.assertNotNull(responseMessage);
         Assertions.assertEquals("Payment is succeed", responseMessage);
         Assertions.assertEquals(Order.Status.BOUGHT, userOrders.get(0).getStatus());
+        Assertions.assertEquals(sumOfBonuses, customer.getTotalBonusAmount());
     }
 
     @Test

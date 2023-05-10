@@ -45,6 +45,11 @@ public class ProductService {
 
         saveProduct.setCategory(categoryService.findCategoryByName(productDto.getCategory()));
 
+        if(productDto.getBonus() != null){
+            Optional<Bonus> optBonus = bonusRepository.findByName(productDto.getBonus());
+            optBonus.ifPresent(saveProduct::setBonus);
+        }
+
         Optional<Product> productByNameAndSellerFullName = productRepository.findProductByNameAndSellerFullName(
                 productDto.getName(), seller.getFullName());
 
