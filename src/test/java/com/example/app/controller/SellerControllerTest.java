@@ -4,6 +4,7 @@ import com.example.app.RestMarketPlaceAppApplication;
 import com.example.app.controller.dto.DiscountDTO;
 import com.example.app.controller.dto.ProductDTO;
 import com.example.app.controller.dto.SellerDTO;
+import com.example.app.controller.dto.SellerStatistic;
 import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.exception.ApplicationExceptionHandler.ErrorResponse;
 import com.example.app.model.Bonus;
@@ -13,6 +14,7 @@ import com.example.app.repository.BonusRepository;
 import com.example.app.repository.ProductRepository;
 import com.example.app.repository.UserRepository;
 import com.example.app.security.JwtAuthenticationFilter;
+import com.example.app.service.ProductService;
 import com.example.app.utils.TokenUtil;
 import com.example.app.utils.factory.SellerFactory;
 import com.example.app.utils.factory.UserFactory;
@@ -60,6 +62,7 @@ class SellerControllerTest {
     private MockMvc mockMvc;
     private String jwtToken;
     private ProductDTO postProduct;
+    private User user;
 
     @BeforeEach
     void setUp() {
@@ -75,7 +78,7 @@ class SellerControllerTest {
         postProduct.setQuantity(40);
 
         UserFactory factory = new SellerFactory();
-        User user = factory.createUser();
+        user = factory.createUser();
 
         jwtToken = TokenUtil.createToken(user);
     }
@@ -254,6 +257,42 @@ class SellerControllerTest {
         Assertions.assertNotNull(productDTO);
         Assertions.assertEquals(productDTO.getDiscount(), product.getDiscount().getName());
         Assertions.assertEquals(product.getDiscount().getDiscountPercent(), discountDTO.getPercentage());
+    }
+
+
+    @Test
+    void getSellerStatisticShouldReturnStatusOk() throws Exception {
+
+        Product product2 = productRepository.findByIdAndSellerEmail(2l, user.getEmail()).get();
+        ProductDTO productDTO2 = ProductDTO.builder()
+                .name(product2.getName())
+                .price(product2.getPrice())
+                .quantity(product2.getQuantity())
+                .discount(product2.getDiscount() == null ? null : product2.getDiscount().getName())
+                .category(product2.getCategory().getName())
+                .bonus(product2.getBonus() == null ? null : product2.getBonus().getName())
+                .build();
+
+        SellerStatistic.CustomerStat customerStat = new SellerStatistic.CustomerStat(3L, "Dan Samuel",
+                "Samuel@mail.com", User.Role.CUSTOMER, 0,
+                com.example.app.model.Order.Status.BOUGHT);
+
+        MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.get(
+                                SELLER_URL + "/products/statistics")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(TokenUtil.AUTH_HEADER, TokenUtil.TOKEN_PREFIX + jwtToken))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andReturn();
+
+        List<SellerStatistic> response = List.of(objectMapper.readValue(mvcResult.getResponse().getContentAsString(),
+                SellerStatistic[].class));
+
+        Assertions.assertNotNull(response);
+        Assertions.assertTrue(response.stream().anyMatch(sellerStatistic -> sellerStatistic.getProduct()
+                .equals(productDTO2)));
+        Assertions.assertTrue(response.stream().flatMap(sellerStatistic -> sellerStatistic.getCustomers().stream())
+                .anyMatch(customer -> customer.equals(customerStat)));
     }
 
 }

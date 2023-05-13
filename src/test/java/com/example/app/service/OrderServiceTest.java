@@ -2,6 +2,7 @@ package com.example.app.service;
 
 import com.example.app.controller.dto.CreateOrderDTO;
 import com.example.app.controller.dto.ProductDTO;
+import com.example.app.controller.dto.SellerStatistic;
 import com.example.app.controller.dto.UpdateProductDTO;
 import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.exception.NotFoundException;
@@ -21,6 +22,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -56,7 +58,13 @@ class OrderServiceTest {
                 new Category(1L, "laptop", "gadget", null),
                 user, null, 10, null);
         orderDetails = new OrderDetails(1L, product, "Honor h2", null, 1);
-        order = new Order(1L, null, 225, null, List.of(orderDetails), Order.Status.CREATED);
+        List<OrderDetails> details = new ArrayList<>();
+        details.add(orderDetails);
+        order = new Order(1L, null, 225, null, details, Order.Status.CREATED);
+        orderDetails.setOrder(order);
+        List<Product> products = new ArrayList<>();
+        products.add(product);
+        user.setProducts(products);
     }
 
     @Test
@@ -225,5 +233,39 @@ class OrderServiceTest {
         Assertions.assertEquals(ApplicationExceptionHandler.PRODUCT_NOT_FOUND, exception.getErrorCode());
         Assertions.assertEquals(String.format("No product with name [%s] in order with id [%d] of user [%s]",
                 productDTO.getName(), order.getId(), user.getEmail()), exception.getMessage());
+    }
+
+    @Test
+    void getSellerStatisticShouldReturnOk() {
+
+        List<Order> orders = new ArrayList<>();
+        orders.add(order);
+        User customer = new User(5L, "John Smith", "john@gmial.com", User.Role.CUSTOMER,
+                0, null, null, orders);
+        List<User> customers = new ArrayList<>();
+        customers.add(customer);
+
+        Mockito.when(userService.getUserByEmail(user.getEmail()))
+                .thenReturn(user);
+        Mockito.when(orderRepository.findAllCustomersBySellerIdAAndProductId(user.getId(), product.getId()))
+                .thenReturn(customers);
+
+        SellerStatistic sellerStatistic = new SellerStatistic(ProductDTO.builder()
+                .price(product.getPrice())
+                .quantity(product.getQuantity())
+                .name(product.getName())
+                .category(product.getCategory().getName())
+                .build(), List.of(new SellerStatistic.CustomerStat(customer.getId(), customer.getFullName(),
+                customer.getEmail(), customer.getRole(), customer.getTotalBonusAmount(), Order.Status.CREATED)));
+
+        List<SellerStatistic> customersWhichOrderedSellerProduct =
+                orderService.getCustomersWhichOrderedSellerProduct(user.getEmail());
+
+        Assertions.assertNotNull(customersWhichOrderedSellerProduct);
+        Assertions.assertEquals(sellerStatistic.getProduct(), customersWhichOrderedSellerProduct.get(0).getProduct());
+        Assertions.assertEquals(sellerStatistic.getCustomers().get(0),
+                customersWhichOrderedSellerProduct.get(0).getCustomers().get(0));
+        Assertions.assertEquals(sellerStatistic, customersWhichOrderedSellerProduct.get(0));
+
     }
 }
