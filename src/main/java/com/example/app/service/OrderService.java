@@ -13,10 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -183,5 +180,59 @@ public class OrderService {
         }
 
         return bonuses;
+    }
+
+    public List<SellerStatistic> getCustomersWhichOrderedSellerProduct(String sellerEmail) {
+        User seller = userService.getUserByEmail(sellerEmail);
+        List<Product> sellerProducts = seller.getProducts();
+        Map<Product, List<User>> productCustomers = new HashMap<>();
+
+        for (Product product : sellerProducts) {
+            List<User> allCustomersBySellerIdAAndProductId = orderRepository.
+                    findAllCustomersBySellerIdAAndProductId(seller.getId(), product.getId());
+            if (!allCustomersBySellerIdAAndProductId.isEmpty()) {
+                productCustomers.put(product, allCustomersBySellerIdAAndProductId);
+            }
+        }
+
+        List<SellerStatistic> sellerStatistics = new ArrayList<>();
+
+        for (Map.Entry<Product, List<User>> entry : productCustomers.entrySet()) {
+            var product = entry.getKey();
+            var customers = entry.getValue();
+            ProductDTO productDTO = ProductDTO.builder()
+                    .name(product.getName())
+                    .quantity(product.getQuantity())
+                    .price(product.getPrice())
+                    .category(product.getCategory().getName())
+                    .bonus(product.getBonus() == null ? null : product.getBonus().getName())
+                    .discount(product.getDiscount() == null ? null : product.getDiscount().getName())
+                    .build();
+
+            List<SellerStatistic.CustomerStat> customerDTOS = customers.stream()
+                    .map(customer -> new SellerStatistic.CustomerStat(customer.getId(), customer.getFullName(),
+                            customer.getEmail(), customer.getRole(), customer.getTotalBonusAmount(),
+                            extractOrderStatusFromCustomer(customer, product)))
+                    .toList();
+
+            SellerStatistic sellerStatistic = new SellerStatistic(productDTO, customerDTOS);
+            sellerStatistics.add(sellerStatistic);
+        }
+
+        return sellerStatistics;
+    }
+
+    private Order.Status extractOrderStatusFromCustomer(User customer, Product product) {
+        List<Order> orders = customer.getOrders();
+        for (Order order : orders) {
+            List<OrderDetails> details = order.getOrderDetails();
+            for (OrderDetails detail : details) {
+                if (detail.getProduct().equals(product)) {
+                    return order.getStatus();
+                }
+            }
+        }
+
+        return null;
     }
 }

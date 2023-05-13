@@ -3,11 +3,13 @@ package com.example.app.controller;
 import com.example.app.controller.dto.DiscountDTO;
 import com.example.app.controller.dto.ProductDTO;
 import com.example.app.controller.dto.SellerDTO;
+import com.example.app.controller.dto.SellerStatistic;
 import com.example.app.model.Product;
 import com.example.app.model.User;
 import com.example.app.model.User.Role;
 import com.example.app.security.SimpleUserPrinciple;
 import com.example.app.security.util.UserPrincipalUtil;
+import com.example.app.service.OrderService;
 import com.example.app.service.ProductService;
 import com.example.app.service.UserService;
 import jakarta.validation.Valid;
@@ -26,11 +28,13 @@ public class SellerController {
 
     private final ProductService productService;
     private final UserService sellerService;
+    private final OrderService orderService;
 
     @Autowired
-    public SellerController(ProductService productService, UserService userService) {
+    public SellerController(ProductService productService, UserService userService, OrderService orderService) {
         this.productService = productService;
         this.sellerService = userService;
+        this.orderService = orderService;
     }
 
 
@@ -43,6 +47,15 @@ public class SellerController {
         Product product = productService.createProduct(productDto, seller);
 
         return new ResponseEntity<>(product, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/products/statistics")
+    public ResponseEntity<List<SellerStatistic>> getSellerStatistics() {
+        String sellerEmail = UserPrincipalUtil.extractUserEmail();
+
+        var response = orderService.getCustomersWhichOrderedSellerProduct(sellerEmail);
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping()
@@ -85,7 +98,7 @@ public class SellerController {
                 .quantity(product.getQuantity())
                 .build();
 
-        if(product.getBonus() != null){
+        if (product.getBonus() != null) {
             response.setBonus(product.getBonus().getName());
         }
 
