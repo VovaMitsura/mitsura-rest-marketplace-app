@@ -1,0 +1,48 @@
+[
+  {
+    "id": 1,
+    "name": "smartphone",
+    "description": "Smartphone description ...",
+    "products": [
+      {
+        "id": 1,
+        "name": "Samsung m53",
+        "price": 320,
+        "discount": {
+          "id": 1,
+          "name": "Happy New Year disc.",
+          "discountPercent": 30
+        },
+        "quantity": 15
+      },
+      {
+        "id": 2,
+        "name": "Samsung a54",
+        "price": 370,
+        "discount": null,
+        "quantity": 20
+      },
+      {
+        "id": 3,
+        "name": "Honor h2",
+        "price": 225,
+        "discount": null,
+        "quantity": 30
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "laptop",
+    "description": "Laptop description ...",
+    "products": [
+      {
+        "id": 4,
+        "name": "Asus vivoBook",
+        "price": 380,
+        "discount": null,
+        "quantity": 10
+      }
+    ]
+  }
+]
