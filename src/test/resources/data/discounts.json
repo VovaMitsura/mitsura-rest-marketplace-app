@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "name": "Happy New Year disc.",
+    "discountPercent": 30
+  },
+  {
+    "id": 2,
+    "name": "Christmas disc.",
+    "discountPercent": 20
+  },
+  {
+    "id": 1,
+    "name": "Black Friday disc.",
+    "discountPercent": 40
+  }
+]

@@ -1,0 +1,70 @@
+[
+  {
+    "id": 1,
+    "fullName": "John Smith",
+    "email": "john@mail.com",
+    "role": "CUSTOMER",
+    "totalBonusAmount": 0,
+    "products": null,
+    "orders": [
+      {
+        "id": 1,
+        "totalAmount": 8500,
+        "date": "2023-04-07T13:16:23.000+00:00",
+        "orderDetails": null,
+        "status": "CREATED"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "fullName": "Dan Samuel",
+    "email": "dan@mail.com",
+    "role": "SELLER",
+    "totalBonusAmount": 0,
+    "products": [
+      {
+        "id": 1,
+        "name": "Samsung m53",
+        "price": 320,
+        "discount": {
+          "id": 1,
+          "name": "Happy New Year disc.",
+          "discountPercent": 30
+        },
+        "quantity": 15
+      },
+      {
+        "id": 2,
+        "name": "Samsung a54",
+        "price": 370,
+        "discount": null,
+        "quantity": 20
+      },
+      {
+        "id": 3,
+        "name": "Honor h2",
+        "price": 225,
+        "discount": null,
+        "quantity": 30
+      },
+      {
+        "id": 4,
+        "name": "Asus vivoBook",
+        "price": 380,
+        "discount": null,
+        "quantity": 10
+      }
+    ],
+    "orders": null
+  },
+  {
+    "id": 3,
+    "fullName": "Jack John",
+    "email": "jack@mail.com",
+    "role": "ADMIN",
+    "totalBonusAmount": 0,
+    "products": null,
+    "orders": null
+  }
+]
