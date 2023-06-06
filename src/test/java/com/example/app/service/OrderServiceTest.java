@@ -12,6 +12,7 @@ import com.example.app.repository.OrderDetailsRepository;
 import com.example.app.repository.OrderRepository;
 import com.example.app.service.stripe.StripePaymentStatus;
 import com.stripe.model.Charge;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +45,8 @@ class OrderServiceTest {
     OrderDetailsRepository orderDetailsRepository;
     @MockBean
     PaymentProvider paymentService;
+    @MockBean
+    MailingService mailingService;
 
     Product product;
     OrderDetails orderDetails;
@@ -52,6 +55,7 @@ class OrderServiceTest {
             null, null, null);
     CreditCard card = new CreditCard("12345678910", "2024", "4", "123");
 
+    @SneakyThrows
     @BeforeEach()
     void setUp() {
         product = new Product(1L, "Honor h2", 225, null,
@@ -65,6 +69,8 @@ class OrderServiceTest {
         List<Product> products = new ArrayList<>();
         products.add(product);
         user.setProducts(products);
+
+        Mockito.doNothing().when(mailingService).send(Mockito.any(User.class), Mockito.anyString(), Mockito.anyMap());
     }
 
     @Test
