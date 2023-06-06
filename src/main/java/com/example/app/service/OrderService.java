@@ -10,6 +10,8 @@ import com.example.app.repository.OrderDetailsRepository;
 import com.example.app.repository.OrderRepository;
 import com.example.app.service.stripe.StripePaymentStatus;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -19,11 +21,18 @@ import java.util.*;
 @RequiredArgsConstructor
 public class OrderService {
 
+    public static final String MAIL_TEMPLATE_ORDER_IS_PAYED = "order_is_payed";
+    public static final String MAIL_TEMPLATE_ORDER_IS_NOT_PAYED = "order_is_not_payed";
+
     private final OrderRepository orderRepository;
     private final ProductService productService;
     private final UserService userService;
     private final OrderDetailsRepository orderDetailsRepository;
     private final PaymentProvider paymentService;
+    private final MailingService emailService;
+
+    private final Logger logger = LoggerFactory.getLogger(OrderService.class);
+
 
     public List<Order> getUserOrders(String userEmail, Order.Status status) {
         List<Order> userOrders = orderRepository.findAllByCustomerEmailAndStatus(userEmail, status);
@@ -71,7 +80,6 @@ public class OrderService {
 
         return order;
     }
-
 
     public Order updateProduct(Long id, String userEmail, UpdateProductDTO updateProduct) {
 
@@ -136,6 +144,18 @@ public class OrderService {
         order.setStatus(Order.Status.BOUGHT);
         order.setDate(new Timestamp(new Date().getTime()));
         orderRepository.save(order);
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("order", order);
+        payload.put("paymentStatus", paymentStatus);
+
+        try {
+            this.emailService.send(order.getCustomer(), paymentStatus.isSucceeded() ?
+                    MAIL_TEMPLATE_ORDER_IS_PAYED : MAIL_TEMPLATE_ORDER_IS_NOT_PAYED, payload);
+        } catch (Exception e) {
+            logger.error(String.format("Unable to send email to %s about %s with payment status %s",
+                    order.getCustomer().getEmail(), order, paymentStatus));
+        }
 
         return paymentStatus;
     }
