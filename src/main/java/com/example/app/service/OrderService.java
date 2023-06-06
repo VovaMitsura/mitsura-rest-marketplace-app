@@ -31,7 +31,7 @@ public class OrderService {
     private final PaymentProvider paymentService;
     private final MailingService emailService;
 
-    private Logger logger = LoggerFactory.getLogger(OrderService.class);
+    private final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
 
     public List<Order> getUserOrders(String userEmail, Order.Status status) {
