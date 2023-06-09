@@ -1,12 +1,12 @@
-insert into User (fullname, email, role, password, bonuses_amount)
+insert into User (fullname, email, role, password, bonuses_amount, enabled)
 values ('John Smith', 'john@mail.com', 'CUSTOMER',
-        '$2a$10$8zXeu9h2RKWSh8nqSz4MfuURChXZLbnTzVGHZwPYwn6gOR7PBfiMW', 0),
+        '$2a$10$8zXeu9h2RKWSh8nqSz4MfuURChXZLbnTzVGHZwPYwn6gOR7PBfiMW', 0, true),
        ('Jack John', 'jack@mail.com', 'ADMIN',
-        '$2a$10$8zXeu9h2RKWSh8nqSz4MfuURChXZLbnTzVGHZwPYwn6gOR7PBfiMW', 0),
-       ('Dan Samuel', 'Samuel@mail.com', 'CUSTOMER', '123456', 0),
-       ('Will Taylor', 'will@mail.com', 'CUSTOMER', '123456', 0),
+        '$2a$10$8zXeu9h2RKWSh8nqSz4MfuURChXZLbnTzVGHZwPYwn6gOR7PBfiMW', 0, true),
+       ('Dan Samuel', 'Samuel@mail.com', 'CUSTOMER', '123456', 0, true),
+       ('Will Taylor', 'will@mail.com', 'CUSTOMER', '123456', 0, true),
        ('Tanya Smith', 'tanya@mail.com', 'SELLER',
-        '$2a$10$8zXeu9h2RKWSh8nqSz4MfuURChXZLbnTzVGHZwPYwn6gOR7PBfiMW', 0);
+        '$2a$10$8zXeu9h2RKWSh8nqSz4MfuURChXZLbnTzVGHZwPYwn6gOR7PBfiMW', 0, true);
 
 insert into Bonus (name, date, amount)
 values ('action', now(), 200),

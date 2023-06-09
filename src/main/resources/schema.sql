@@ -21,8 +21,9 @@ create table if not exists User
     fullname       varchar(50)        not null,
     email          varchar(50) unique not null,
     role           varchar(15)        not null,
-    bonuses_amount int default 0,
-    password       varchar(100)       not null
+    bonuses_amount int     default 0,
+    password       varchar(100)       not null,
+    enabled        boolean default false
 );
 
 create table if not exists Discount
