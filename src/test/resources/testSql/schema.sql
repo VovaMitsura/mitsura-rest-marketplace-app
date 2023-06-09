@@ -3,6 +3,7 @@ drop table if exists Product;
 drop table if exists Discount;
 drop table if exists Category;
 drop table if exists Bonus;
+drop table if exists Verification_Token;
 drop table if exists My_Order;
 drop table if exists User;
 
@@ -20,8 +21,9 @@ create table if not exists User
     fullname       varchar(50)        not null,
     email          varchar(50) unique not null,
     role           varchar(15)        not null,
-    bonuses_amount int default 0,
-    password       varchar(100)       not null
+    bonuses_amount int     default 0,
+    password       varchar(100)       not null,
+    enabled        boolean default false
 );
 
 create table if not exists Discount
@@ -41,14 +43,14 @@ create table if not exists Category
 
 create table if not exists Product
 (
-    id             int primary key auto_increment,
-    name           varchar(30),
-    price          int check (price > 0),
-    discount_id    int,
-    category_id    int,
-    seller_id      int,
-    bonus_id       int,
-    quantity       int check (quantity > 0),
+    id          int primary key auto_increment,
+    name        varchar(30),
+    price       int check (price > 0),
+    discount_id int,
+    category_id int,
+    seller_id   int,
+    bonus_id    int,
+    quantity    int check (quantity > 0),
     foreign key (discount_id) references Discount (id)
         on delete cascade
         on update cascade,
@@ -87,4 +89,16 @@ create table if not exists Order_details
     foreign key (order_id) references My_Order (id)
         on delete cascade
         on update cascade
+);
+
+create table if not exists Verification_Token
+(
+    id          int primary key auto_increment,
+    user_id     int,
+    token       varchar(255),
+    expiry_date timestamp,
+    foreign key (user_id) references User (id)
+        on delete cascade
+        on update cascade,
+    constraint unique (id, user_id)
 );
