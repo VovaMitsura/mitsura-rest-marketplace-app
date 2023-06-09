@@ -100,5 +100,5 @@ create table if not exists Verification_Token
     foreign key (user_id) references User (id)
         on delete cascade
         on update cascade,
-    constraint unique (id, user_id)
+    constraint unique_token unique (id, user_id)
 );

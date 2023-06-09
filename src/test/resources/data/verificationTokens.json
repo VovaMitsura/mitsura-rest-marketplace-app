@@ -1,0 +1,24 @@
+[
+  {
+    "id": 1,
+    "token": "abc",
+    "expiryDate": "2023-04-23T18:25:43.511Z",
+    "user": {
+      "id": 1,
+      "fullName": "John Smith",
+      "email": "john@mail.com",
+      "role": "CUSTOMER",
+      "totalBonusAmount": 0,
+      "products": null,
+      "orders": [
+        {
+          "id": 1,
+          "totalAmount": 8500,
+          "date": "2023-04-07T13:16:23.000+00:00",
+          "orderDetails": null,
+          "status": "CREATED"
+        }
+      ]
+    }
+  }
+]

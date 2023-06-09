@@ -32,3 +32,6 @@ insert into order_details (id, product_id, order_id, quantity)
 values (1, 3, 1, 1),
        (2, 2, 2, 1),
        (3, 3, 2, 1);
+
+insert into verification_token (id, user_id, token, expiry_date)
+values (1, 1, 'abc', now())
