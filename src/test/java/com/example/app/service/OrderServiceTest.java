@@ -52,7 +52,7 @@ class OrderServiceTest {
     OrderDetails orderDetails;
     Order order;
     User user = new User(1L, "John", "John@mail.com", User.Role.SELLER, 0,
-            null, null, null);
+            null, null, null, true);
     CreditCard card = new CreditCard("12345678910", "2024", "4", "123");
 
     @SneakyThrows
@@ -247,7 +247,7 @@ class OrderServiceTest {
         List<Order> orders = new ArrayList<>();
         orders.add(order);
         User customer = new User(5L, "John Smith", "john@gmial.com", User.Role.CUSTOMER,
-                0, null, null, orders);
+                0, null, null, orders, true);
         List<User> customers = new ArrayList<>();
         customers.add(customer);
 

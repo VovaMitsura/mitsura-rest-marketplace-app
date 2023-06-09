@@ -136,7 +136,7 @@ class UserServiceTest {
 
         User update = new User(1L, "John Smith", "john@mail.com", User.Role.CUSTOMER,
                 1000, optionalUser.get().getPassword(),
-                optionalUser.get().getProducts(), optionalUser.get().getOrders());
+                optionalUser.get().getProducts(), optionalUser.get().getOrders(), true);
 
         Mockito.when(userRepository.findByEmail("john@mail.com"))
                 .thenReturn(optionalUser);
