@@ -1,5 +1,6 @@
 package com.example.app.controller;
 
+import com.example.app.controller.dto.ActivationDTO;
 import com.example.app.controller.dto.AuthenticationRequest;
 import com.example.app.controller.dto.AuthenticationResponse;
 import com.example.app.controller.dto.RegisterRequest;
@@ -21,8 +22,8 @@ public class AuthenticationController {
     private final AuthenticationService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(
-           @Valid @RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<ActivationDTO> register(
+            @Valid @RequestBody RegisterRequest registerRequest) {
         return new ResponseEntity<>(authService.register(registerRequest), HttpStatus.CREATED);
     }
 
@@ -30,6 +31,12 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> register(
             @Valid @RequestBody AuthenticationRequest registerRequest) {
         return ResponseEntity.ok(authService.authenticate(registerRequest));
+    }
+
+    @GetMapping("/activation")
+    public ResponseEntity<AuthenticationResponse> activation(@RequestParam(required = true, name = "token")
+                                                             String token) {
+        return ResponseEntity.ok(authService.activate(token));
     }
 
     @GetMapping("/me")
