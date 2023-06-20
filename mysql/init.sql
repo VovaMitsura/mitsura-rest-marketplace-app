@@ -1,3 +1,7 @@
+CREATE DATABASE IF NOT EXISTS market;
+
+use market;
+
 drop table if exists Order_details;
 drop table if exists Product;
 drop table if exists Discount;
@@ -41,14 +45,14 @@ create table if not exists Category
 
 create table if not exists Product
 (
-    id             int primary key auto_increment,
-    name           varchar(30),
-    price          int check (price > 0),
-    discount_id    int,
-    category_id    int,
-    seller_id      int,
-    bonus_id       int,
-    quantity       int check (quantity > 0),
+    id          int primary key auto_increment,
+    name        varchar(30),
+    price       int check (price > 0),
+    discount_id int,
+    category_id int,
+    seller_id   int,
+    bonus_id    int,
+    quantity    int check (quantity > 0),
     foreign key (discount_id) references Discount (id)
         on delete cascade
         on update cascade,
@@ -88,3 +92,13 @@ create table if not exists Order_details
         on delete cascade
         on update cascade
 );
+
+insert into User (fullname, email, role, password, bonuses_amount)
+values ('John Smith', 'john@mail.com', 'CUSTOMER',
+        '$2a$10$8zXeu9h2RKWSh8nqSz4MfuURChXZLbnTzVGHZwPYwn6gOR7PBfiMW', 0),
+       ('Jack John', 'jack@mail.com', 'ADMIN',
+        '$2a$10$8zXeu9h2RKWSh8nqSz4MfuURChXZLbnTzVGHZwPYwn6gOR7PBfiMW', 0),
+       ('Dan Samuel', 'Samuel@mail.com', 'CUSTOMER', '123456', 0),
+       ('Will Taylor', 'will@mail.com', 'CUSTOMER', '123456', 0),
+       ('Tanya Smith', 'tanya@mail.com', 'SELLER',
+        '$2a$10$8zXeu9h2RKWSh8nqSz4MfuURChXZLbnTzVGHZwPYwn6gOR7PBfiMW', 0);

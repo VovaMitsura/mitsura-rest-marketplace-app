@@ -1,4 +1,4 @@
 delete from User;
 delete from Bonus;
-delete from category;
-delete from product;
+delete from Category;
+delete from Product;
