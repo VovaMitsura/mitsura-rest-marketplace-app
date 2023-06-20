@@ -6,6 +6,8 @@ target/
 
 ### other ###
 *.drawio
+data
+.env
 
 ### STS ###
 .apt_generated
