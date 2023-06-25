@@ -26,11 +26,9 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Docker Build and Push to DockerHub
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          push: true
-          tags: vovamitsura/testapp-img:latest
+        run: | 
+          docker build -t vovamitsura/testapp-img:latest
+           docker push vovamitsura/testapp-img:latest
 
   deploy_to_droplet:
     runs-on: ubuntu-latest
