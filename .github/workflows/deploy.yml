@@ -47,5 +47,5 @@ jobs:
             docker-compose down
             docker rmi vovamitsura/testapp-img:latest
             docker pull vovamitsura/testapp-img:latest
-            docker-compose up --build 
+            docker-compose up --build -d 
             docker ps -a
