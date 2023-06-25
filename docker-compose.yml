@@ -15,7 +15,7 @@ services:
 
 
   spring-boot-app:
-    image: testapp-img:latest
+    image: vovamitsura/testapp-img:latest
     depends_on:
       - mysql
     ports:
