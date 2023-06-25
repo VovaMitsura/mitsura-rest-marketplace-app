@@ -26,9 +26,9 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Docker Build and Push to DockerHub
-        run: | 
-          docker build -t vovamitsura/testapp-img:latest
-           docker push vovamitsura/testapp-img:latest
+        run: |
+          docker build -t vovamitsura/testapp-img:latest .
+          docker push vovamitsura/testapp-img:latest
 
   deploy_to_droplet:
     runs-on: ubuntu-latest
@@ -41,7 +41,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          script: | 
+          script: |
             cd /
             docker-compose down
             docker rmi vovamitsura/testapp-img:latest
