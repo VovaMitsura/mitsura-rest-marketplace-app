@@ -23,7 +23,7 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 #Copy the JAR file from the build stage to container
-COPY --from=build /app/target/*.jar testapp.jar
+COPY --from=build /home/mitsura-rest-marketplace-app/target/*.jar testapp.jar
 
 #Set the command to run the application
 CMD ["java", "-jar", "testapp.jar"]
