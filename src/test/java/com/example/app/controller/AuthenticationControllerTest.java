@@ -1,24 +1,32 @@
 package com.example.app.controller;
 
 import com.example.app.RestMarketPlaceAppApplication;
+import com.example.app.controller.dto.ActivationDTO;
 import com.example.app.controller.dto.AuthenticationRequest;
 import com.example.app.controller.dto.AuthenticationResponse;
 import com.example.app.controller.dto.RegisterRequest;
 import com.example.app.exception.ApplicationExceptionHandler;
 import com.example.app.exception.ApplicationExceptionHandler.ErrorResponse;
+import com.example.app.exception.ResourceConflictException;
 import com.example.app.model.User;
 import com.example.app.model.User.Role;
+import com.example.app.model.VerificationToken;
 import com.example.app.repository.UserRepository;
+import com.example.app.repository.VerificationTokenRepository;
 import com.example.app.security.SimpleUserPrinciple;
+import com.example.app.service.MailingService;
 import com.example.app.utils.TokenUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.jdbc.Sql;
@@ -30,6 +38,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.UUID;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {RestMarketPlaceAppApplication.class})
@@ -45,18 +57,25 @@ class AuthenticationControllerTest {
     private ObjectMapper mapper;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    VerificationTokenRepository tokenRepository;
+
+    @MockBean
+    private MailingService mailingService;
 
     private MockMvc mockMvc;
     private RegisterRequest registerRequest;
     private AuthenticationRequest authenticationRequest;
+    private User user;
 
     @BeforeEach
+    @SneakyThrows
     void setUp() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
                 .apply(SecurityMockMvcConfigurers.springSecurity())
                 .build();
 
-        User user = User.builder()
+        user = User.builder()
                 .id(1L)
                 .fullName("CoCa BiBsBa")
                 .email("CoCa@mail.org")
@@ -67,57 +86,89 @@ class AuthenticationControllerTest {
         registerRequest = new RegisterRequest(user.getFullName(), user.getEmail(), user.getPassword(),
                 user.getRole().toString());
         authenticationRequest = new AuthenticationRequest(user.getEmail(), user.getPassword());
+
+        Mockito.doNothing().when(mailingService).send(Mockito.any(User.class), Mockito.anyString(), Mockito.anyMap());
     }
 
     @Test
-    void registerSameUserAccountTwoTimeShouldThrowException() throws Exception {
+    void registerAccountShouldReturnOkMessage() throws Exception {
         MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(registerRequest)))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andReturn();
 
-        AuthenticationResponse registerResponse = mapper.readValue(mvcResult.getResponse().getContentAsString(),
-                AuthenticationResponse.class);
+        var activationResponse = mapper.readValue(mvcResult.getResponse().getContentAsString(),
+                ActivationDTO.class);
 
+        Assertions.assertNotNull(activationResponse);
+        Assertions.assertEquals("Confirm email to activate account", activationResponse.getMessage());
+    }
 
-        MvcResult mvcResult1 = this.mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/register")
+    @Test
+    void registerSameAccountTwiceThrowException() throws Exception {
+        this.mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(registerRequest)))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andReturn();
+
+        MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(registerRequest)))
                 .andExpect(MockMvcResultMatchers.status().isConflict())
                 .andReturn();
 
-        ErrorResponse errorResponse = mapper.readValue(mvcResult1.getResponse().getContentAsString(),
+        ErrorResponse errorResponse = mapper.readValue(mvcResult.getResponse().getContentAsString(),
                 ErrorResponse.class);
 
-        Assertions.assertNotNull(registerResponse.getToken());
+        Assertions.assertNotNull(errorResponse);
         Assertions.assertEquals(ApplicationExceptionHandler.DUPLICATE_ENTRY, errorResponse.getErrorCode());
+        Assertions.assertNotNull(errorResponse.getErrorMessage());
     }
 
 
     @Test
-    void authenticateExistUserShouldReturnStatusOk() throws Exception {
+    void activateUserAccountUpdateEnableStatus() throws Exception {
+        var cal = Calendar.getInstance();
+        cal.add(Calendar.MINUTE, 24 * 60);
+        var timestamp = new Timestamp(cal.getTime().getTime());
+        String token = UUID.randomUUID().toString();
 
-        MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(registerRequest)))
-                .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andReturn();
+        userRepository.saveAndFlush(user);
+        tokenRepository.saveAndFlush(new VerificationToken(1L, token, user, timestamp));
 
-        AuthenticationResponse responseRegistering = mapper.readValue(mvcResult.getResponse().getContentAsString(),
-                AuthenticationResponse.class);
-
-        MvcResult mvcResult1 = this.mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/authenticate")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(authenticationRequest)))
+        MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders
+                        .get(BASE_URL + "/activation?token=" + token))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();
 
-        AuthenticationResponse responseAuthentication = mapper.readValue(mvcResult1.getResponse().getContentAsString(),
-                AuthenticationResponse.class);
+        var response = mapper.readValue(mvcResult.getResponse().getContentAsString(), AuthenticationResponse.class);
 
-        Assertions.assertNotNull(responseAuthentication);
-        Assertions.assertNotNull(responseRegistering);
+        Assertions.assertNotNull(response.getToken());
+    }
+
+    @Test
+    void activateUserWithExpiredTokenThrowException() throws Exception {
+        var cal = Calendar.getInstance();
+        cal.add(Calendar.MINUTE, -24 * 60);
+        var timestamp = new Timestamp(cal.getTime().getTime());
+        String token = UUID.randomUUID().toString();
+
+        userRepository.saveAndFlush(user);
+        tokenRepository.saveAndFlush(new VerificationToken(1L, token, user, timestamp));
+
+        MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders
+                        .get(BASE_URL + "/activation?token=" + token))
+                .andExpect(MockMvcResultMatchers.status().isConflict())
+                .andReturn();
+
+        var response = mapper.readValue(mvcResult.getResponse().getContentAsString(), ErrorResponse.class);
+
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals(ApplicationExceptionHandler.TOKEN_EXCEPTION, response.getErrorCode());
+        Assertions.assertEquals(String.format("Your verification token has expired %s", timestamp),
+                response.getErrorMessage());
     }
 
     @Test

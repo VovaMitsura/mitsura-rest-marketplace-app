@@ -47,6 +47,8 @@ public class User {
   @JsonManagedReference
   private List<Order> orders;
 
+  private boolean enabled;
+
   public enum Role {CUSTOMER, SELLER, ADMIN
   }
 
