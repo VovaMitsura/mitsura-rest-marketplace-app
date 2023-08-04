@@ -3,7 +3,6 @@ drop table if exists Product;
 drop table if exists Discount;
 drop table if exists Category;
 drop table if exists Bonus;
-drop table if exists Verification_Token;
 drop table if exists My_Order;
 drop table if exists User;
 
@@ -21,9 +20,8 @@ create table if not exists User
     fullname       varchar(50)        not null,
     email          varchar(50) unique not null,
     role           varchar(15)        not null,
-    bonuses_amount int     default 0,
-    password       varchar(100)       not null,
-    enabled        boolean default false
+    bonuses_amount int default 0,
+    password       varchar(100)       not null
 );
 
 create table if not exists Discount
@@ -90,6 +88,16 @@ create table if not exists Order_details
         on delete cascade
         on update cascade
 );
+
+insert into User (fullname, email, role, password, bonuses_amount)
+values ('John Smith', 'john@mail.com', 'CUSTOMER',
+        '$2a$10$8zXeu9h2RKWSh8nqSz4MfuURChXZLbnTzVGHZwPYwn6gOR7PBfiMW', 0),
+       ('Jack John', 'jack@mail.com', 'ADMIN',
+        '$2a$10$8zXeu9h2RKWSh8nqSz4MfuURChXZLbnTzVGHZwPYwn6gOR7PBfiMW', 0),
+       ('Dan Samuel', 'Samuel@mail.com', 'CUSTOMER', '123456', 0),
+       ('Will Taylor', 'will@mail.com', 'CUSTOMER', '123456', 0),
+       ('Tanya Smith', 'tanya@mail.com', 'SELLER',
+        '$2a$10$8zXeu9h2RKWSh8nqSz4MfuURChXZLbnTzVGHZwPYwn6gOR7PBfiMW', 0);
 
 create table if not exists Verification_Token
 (
