@@ -1,23 +1,24 @@
 version: "3.9"
 
 services:
-  mysql:
+  mysql1:
     image: mysql:latest
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     volumes:
       - ./data/dbdata:/var/lib/mysql
       - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
-    container_name: mysql
+    container_name: mysql1
+    ports:
+      - "3307:3306"
 
 
   spring-boot-app:
     image: vovamitsura/testapp-img:latest
     depends_on:
-      - mysql
+      - mysql1
+    restart: always
     ports:
       - "8080:8080"
     environment:
